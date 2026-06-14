@@ -8,9 +8,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
+
+  <!-- ANIMATED BACKGROUND -->
+  <div class="animated-background-container">
+    <canvas id="bgCanvas" class="animated-background"></canvas>
+    <div class="scanlines"></div>
+    <div class="background-text">
+      <span class="glitch-text" data-text="BlackAI ⚛︎">BlackAI&nbsp;⚛︎</span>
+    </div>
+  </div>
 
   <!-- NAV -->
   <nav id="navbar">
@@ -30,7 +39,7 @@
     </div>
   </nav>
 
-  <!-- HERO — full screen, only page -->
+  <!-- HERO -->
   <section class="hero">
     <div class="hero-globe-wrap">
       <div class="globe-glow"></div>
@@ -40,8 +49,8 @@
       <p class="hero-eyebrow">CYBER INTELLIGENCE GROUP</p>
       <h1 class="hero-title">
         Cyber Intelligence<br />
-        for Global Threats<br />
-        and Vulnerabilities.
+        For Global Threats<br />
+        And Vulnerabilities.
       </h1>
       <div class="hero-rule"></div>
       <p class="hero-sub">
@@ -50,6 +59,6 @@
     </div>
   </section>
 
-  <script src="main.js"></script>
+  <script src="main.js?v=3"></script>
 </body>
 </html>

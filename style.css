@@ -275,3 +275,156 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ══════════════════════════════
+   ANIMATED BACKGROUND
+══════════════════════════════ */
+.animated-background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background: #000;
+  overflow: hidden;
+}
+
+.animated-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Subtle scanlines — cyberpunk CRT feel */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.035) 0px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.5;
+  animation: scanline-drift 8s linear infinite;
+}
+
+@keyframes scanline-drift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 6px; }
+}
+
+.background-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.glitch-text {
+  position: relative;
+  display: inline-block;
+  font-family: Arial, sans-serif;
+  font-size: 4rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow:
+    0 0 6px  rgba(255,255,255,0.55),
+    0 0 18px rgba(255,255,255,0.25),
+    0 0 42px rgba(255,255,255,0.12);
+  animation: title-flicker 7s infinite steps(1);
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: transparent;
+  overflow: hidden;
+  color: #ffffff;
+}
+.glitch-text::before {
+  text-shadow: -3px 0 rgba(255,255,255,0.85);
+  animation: glitch-top 7s infinite steps(1);
+  opacity: 0;
+}
+.glitch-text::after {
+  text-shadow: 3px 0 rgba(150,150,150,0.85);
+  animation: glitch-bottom 7s infinite steps(1);
+  opacity: 0;
+}
+
+@keyframes title-flicker {
+  0%,  69%   { opacity: 1;    transform: translate(0,0); }
+  70%        { opacity: 0.4;  transform: translate(2px,-1px); }
+  71%        { opacity: 1;    transform: translate(-2px,1px); }
+  72.5%      { opacity: 0.75; transform: translate(2px,0); }
+  73.5%      { opacity: 1;    transform: translate(-1px,-1px); }
+  75%        { opacity: 0.25; transform: translate(1px,1px); }
+  76.5%      { opacity: 1;    transform: translate(0,0); }
+  77%, 88%   { opacity: 1;    transform: translate(0,0); }
+  89%        { opacity: 0.5;  transform: translate(-2px,0); }
+  90%        { opacity: 1;    transform: translate(2px,-1px); }
+  91.5%      { opacity: 0.2;  transform: translate(-1px,1px); }
+  92.5%      { opacity: 1;    transform: translate(0,0); }
+  93%, 100%  { opacity: 1;    transform: translate(0,0); }
+}
+
+@keyframes glitch-top {
+  0%,   69.5% { opacity: 0; clip-path: inset(0 0 60% 0);    transform: translate(0,0); }
+  70%         { opacity: 0.9; clip-path: inset(8% 0 62% 0);  transform: translate(-7px,-2px); }
+  71.5%       { opacity: 0.9; clip-path: inset(42% 0 30% 0); transform: translate(8px,1px); }
+  73%         { opacity: 0.9; clip-path: inset(4% 0 76% 0);  transform: translate(-9px,2px); }
+  74.5%       { opacity: 0.9; clip-path: inset(30% 0 45% 0); transform: translate(6px,-1px); }
+  76%         { opacity: 0;   transform: translate(0,0); }
+  76.5%, 88.5%{ opacity: 0; }
+  89%         { opacity: 0.9; clip-path: inset(18% 0 55% 0); transform: translate(-8px,1px); }
+  90.5%       { opacity: 0.9; clip-path: inset(50% 0 22% 0); transform: translate(7px,-2px); }
+  92%         { opacity: 0.9; clip-path: inset(10% 0 65% 0); transform: translate(-6px,2px); }
+  93%, 100%   { opacity: 0;   transform: translate(0,0); }
+}
+
+@keyframes glitch-bottom {
+  0%,   69.5% { opacity: 0; clip-path: inset(60% 0 0 0);    transform: translate(0,0); }
+  70.5%       { opacity: 0.9; clip-path: inset(58% 0 4% 0);  transform: translate(7px,2px); }
+  72%         { opacity: 0.9; clip-path: inset(72% 0 0 0);   transform: translate(-8px,-1px); }
+  73.5%       { opacity: 0.9; clip-path: inset(50% 0 22% 0); transform: translate(9px,-2px); }
+  75%         { opacity: 0.9; clip-path: inset(64% 0 8% 0);  transform: translate(-6px,1px); }
+  76%         { opacity: 0;   transform: translate(0,0); }
+  76.5%, 88.5%{ opacity: 0; }
+  89.5%       { opacity: 0.9; clip-path: inset(55% 0 12% 0); transform: translate(8px,1px); }
+  91%         { opacity: 0.9; clip-path: inset(70% 0 0 0);   transform: translate(-7px,-2px); }
+  92.5%       { opacity: 0.9; clip-path: inset(60% 0 6% 0);  transform: translate(6px,2px); }
+  93%, 100%   { opacity: 0;   transform: translate(0,0); }
+}
+
+/* Ensure hero & nav sit above background */
+#navbar { z-index: 100; }
+.hero   { z-index: 10; }
+
+@media (max-width: 768px) {
+  .glitch-text { font-size: 2.8rem; }
+}
+@media (max-width: 480px) {
+  .glitch-text { font-size: 2.2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scanlines,
+  .glitch-text,
+  .glitch-text::before,
+  .glitch-text::after { animation: none; }
+}
