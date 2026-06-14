@@ -110,63 +110,74 @@ body {
   height: 100vh;
   overflow: hidden;
   background: var(--black);
-  /* content anchored to bottom-left, like NSO */
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  padding-top: 10vh; /* shift text slightly below true center like NSO */
 }
 
-/* ── Globe — dominates the right, bleeds top & right edges ── */
+/* ── Globe — spans right 65% of viewport, true center ── */
 .hero-globe-wrap {
   position: absolute;
-  top: 0; right: 0;
-  /* wider than before so globe fills screen like NSO */
-  width: 75%;
+  /* start from 30% left so globe center lands at ~65% of viewport */
+  top: 0;
+  left: 30%;
+  right: 0;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
 }
 
 .globe-glow {
   position: absolute;
-  inset: 0;
+  inset: -10%;
   background: radial-gradient(
-    ellipse 65% 72% at 58% 46%,
-    rgba(100, 3, 3, 0.18) 0%,
-    rgba(40, 0, 0, 0.08) 48%,
-    transparent 72%
+    circle at 50% 50%,
+    rgba(110, 4, 4, 0.20) 0%,
+    rgba(50, 0, 0, 0.08) 45%,
+    transparent 70%
   );
 }
 
-/* Globe sits top-right, partially off-screen — same as NSO */
+/*
+ * GIF is 500×500 white-on-white.
+ * mix-blend-mode:screen makes the white background disappear on dark bg.
+ * We scale it very large (vh-based) so it fills the right side like NSO.
+ * No mask — let it breathe; the screen blend handles the bg.
+ */
 .globe-img {
   position: absolute;
-  /* top-right anchor, pulled slightly off top and right edges */
-  top: -4%;
-  right: -6%;
-  width: clamp(560px, 80%, 1000px);
-  height: auto;
-  aspect-ratio: 1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Size relative to viewport height so it always fills the screen */
+  width: 90vh;
+  height: 90vh;
+  max-width: none;   /* allow it to exceed % constraints */
   object-fit: contain;
   mix-blend-mode: screen;
-  opacity: 0.96;
-  /* fade toward left & bottom so it blends */
-  -webkit-mask-image: radial-gradient(
-    ellipse 80% 82% at 65% 42%,
-    black 28%, transparent 100%
+  opacity: 1;
+  /* Very subtle left-edge fade only, to prevent text overlap */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 18%,
+    black 100%
   );
-  mask-image: radial-gradient(
-    ellipse 80% 82% at 65% 42%,
-    black 28%, transparent 100%
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 18%,
+    black 100%
   );
 }
 
-/* ── Text content — bottom-left, NSO style ── */
+/* ── Text content — left, vertically centered-lower like NSO ── */
 .hero-content {
   position: relative;
   z-index: 2;
-  /* NSO text spans roughly 38% of viewport width */
   width: 42%;
   min-width: 300px;
-  padding: 0 var(--gutter) clamp(48px, 6vh, 88px) var(--gutter);
+  padding: 0 var(--gutter);
 }
 
 @media (min-width: 1280px) {
@@ -217,7 +228,7 @@ body {
 ══════════════════════════════ */
 @media (max-width: 900px) {
   .hero-content { width: 55%; }
-  .globe-img { width: clamp(420px, 85%, 800px); }
+  .globe-img { width: 70vh; height: 70vh; }
 }
 
 @media (max-width: 768px) {
@@ -240,12 +251,12 @@ body {
   .nav-toggle { display: flex; }
   .nav-cta { align-self: flex-start; }
 
-  .hero { height: 100svh; }
-  .hero-globe-wrap { width: 100%; }
+  .hero { height: 100svh; padding-top: 0; }
+  .hero-globe-wrap { left: 0; right: 0; top: var(--nav-h); height: 60%; }
   .globe-img {
-    width: 90vw;
-    top: 0; right: -10%;
-    opacity: 0.22;
+    width: 85vw;
+    height: 85vw;
+    opacity: 0.25;
   }
   .hero-content {
     width: 100%;
