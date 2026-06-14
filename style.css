@@ -8,7 +8,7 @@
   --silver:       #5a5a5a;
   --silver-light: #999999;
   --white:        #f0ede8;
-  --white-dim:    rgba(240,237,232,0.55);
+  --white-dim:    rgba(240,237,232,0.70);
   --accent:       #cc2222;
 
   --font-display: 'Bebas Neue', sans-serif;
@@ -16,7 +16,7 @@
   --font-mono:    'JetBrains Mono', monospace;
 
   --nav-h:  72px;
-  --gutter: clamp(28px, 5vw, 80px);
+  --gutter: clamp(28px, 4vw, 72px);
   --max-w:  1280px;
 }
 
@@ -102,7 +102,7 @@ body {
 }
 
 /* ══════════════════════════════
-   HERO — full viewport, nothing below
+   HERO
 ══════════════════════════════ */
 .hero {
   position: relative;
@@ -110,15 +110,17 @@ body {
   height: 100vh;
   overflow: hidden;
   background: var(--black);
+  /* content anchored to bottom-left, like NSO */
   display: flex;
-  align-items: center;        /* vertically centre content */
+  align-items: flex-end;
 }
 
-/* ── Globe — right half, large, pushed slightly up ── */
+/* ── Globe — dominates the right, bleeds top & right edges ── */
 .hero-globe-wrap {
   position: absolute;
   top: 0; right: 0;
-  width: 65%;
+  /* wider than before so globe fills screen like NSO */
+  width: 75%;
   height: 100%;
   pointer-events: none;
 }
@@ -127,42 +129,44 @@ body {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 65% 75% at 58% 48%,
-    rgba(110, 4, 4, 0.20) 0%,
-    rgba(50, 0, 0, 0.09) 45%,
+    ellipse 65% 72% at 58% 46%,
+    rgba(100, 3, 3, 0.18) 0%,
+    rgba(40, 0, 0, 0.08) 48%,
     transparent 72%
   );
 }
 
+/* Globe sits top-right, partially off-screen — same as NSO */
 .globe-img {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  /* shift up slightly and right — matching NSO vertical position */
-  transform: translate(-44%, -53%);
-  width: clamp(500px, 75%, 940px);
+  /* top-right anchor, pulled slightly off top and right edges */
+  top: -4%;
+  right: -6%;
+  width: clamp(560px, 80%, 1000px);
   height: auto;
   aspect-ratio: 1;
   object-fit: contain;
   mix-blend-mode: screen;
-  opacity: 0.95;
+  opacity: 0.96;
+  /* fade toward left & bottom so it blends */
   -webkit-mask-image: radial-gradient(
-    ellipse 76% 86% at 57% 50%,
-    black 30%, transparent 100%
+    ellipse 80% 82% at 65% 42%,
+    black 28%, transparent 100%
   );
   mask-image: radial-gradient(
-    ellipse 76% 86% at 57% 50%,
-    black 30%, transparent 100%
+    ellipse 80% 82% at 65% 42%,
+    black 28%, transparent 100%
   );
 }
 
-/* ── Left content — vertically centred ── */
+/* ── Text content — bottom-left, NSO style ── */
 .hero-content {
   position: relative;
   z-index: 2;
-  width: 46%;
+  /* NSO text spans roughly 38% of viewport width */
+  width: 42%;
   min-width: 300px;
-  padding: var(--nav-h) var(--gutter) 0 var(--gutter);
+  padding: 0 var(--gutter) clamp(48px, 6vh, 88px) var(--gutter);
 }
 
 @media (min-width: 1280px) {
@@ -173,39 +177,49 @@ body {
 
 .hero-eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: 9px;
+  letter-spacing: 0.24em;
   color: var(--accent);
   text-transform: uppercase;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
+/* NSO title: medium weight, not bold display, ~28-32px equivalent */
 .hero-title {
-  font-family: var(--font-display);
-  font-size: clamp(38px, 4.4vw, 66px);
-  line-height: 1.06;
-  letter-spacing: 0.02em;
+  font-family: var(--font-body);
+  font-size: clamp(20px, 2.2vw, 32px);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
   color: var(--white);
+  text-transform: uppercase;
+  margin-bottom: 0;
 }
 
 .hero-rule {
-  width: 38px;
+  width: 36px;
   height: 2px;
   background: var(--accent);
-  margin: 24px 0;
+  margin: 20px 0;
 }
 
+/* NSO body text: light weight, comfortable line-length */
 .hero-sub {
-  max-width: 420px;
-  font-size: 14px;
+  font-size: clamp(13px, 1.1vw, 15px);
   font-weight: 300;
   color: var(--white-dim);
-  line-height: 1.82;
+  line-height: 1.78;
+  max-width: 420px;
 }
 
 /* ══════════════════════════════
    RESPONSIVE
 ══════════════════════════════ */
+@media (max-width: 900px) {
+  .hero-content { width: 55%; }
+  .globe-img { width: clamp(420px, 85%, 800px); }
+}
+
 @media (max-width: 768px) {
   :root { --gutter: 24px; }
   html, body { overflow: auto; }
@@ -226,19 +240,19 @@ body {
   .nav-toggle { display: flex; }
   .nav-cta { align-self: flex-start; }
 
-  .hero { height: 100svh; align-items: flex-end; }
-  .hero-globe-wrap { width: 100%; height: 60%; top: var(--nav-h); }
+  .hero { height: 100svh; }
+  .hero-globe-wrap { width: 100%; }
   .globe-img {
-    width: 88vw;
-    transform: translate(-50%, -38%);
-    opacity: 0.28;
+    width: 90vw;
+    top: 0; right: -10%;
+    opacity: 0.22;
   }
   .hero-content {
     width: 100%;
     min-width: unset;
-    padding: 0 var(--gutter) 52px;
+    padding: 0 var(--gutter) 48px;
   }
-  .hero-title { font-size: clamp(32px, 9vw, 50px); }
+  .hero-title { font-size: clamp(18px, 6vw, 26px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
