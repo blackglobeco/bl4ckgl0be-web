@@ -141,32 +141,73 @@ body {
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  padding: var(--nav-h) var(--gutter) 0;
+  padding: var(--nav-h) 0 0;
+  background: var(--black);
 }
+
+/* Full-bleed globe on the right, NSO-style */
 .hero-bg {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Radial glow behind the globe */
+.globe-glow {
+  position: absolute;
+  right: -5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 70vw;
+  height: 70vw;
+  max-width: 900px;
+  max-height: 900px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(140, 10, 10, 0.18) 0%,
+    rgba(80, 0, 0, 0.10) 35%,
+    transparent 70%
+  );
   pointer-events: none;
 }
-#globeCanvas {
-  width: 60vmin;
-  height: 60vmin;
-  max-width: 700px;
-  max-height: 700px;
-  opacity: 0.18;
-  transform: translateX(15%);
+
+/* The globe GIF — large, right side, partially cropped */
+.globe-img {
+  position: absolute;
+  right: -4%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(420px, 52vw, 780px);
+  height: clamp(420px, 52vw, 780px);
+  object-fit: contain;
+  opacity: 0.92;
+  mix-blend-mode: screen;
+  /* subtle fade on the left edge so it blends into the dark bg */
+  -webkit-mask-image: radial-gradient(ellipse 85% 90% at 60% 50%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 85% 90% at 60% 50%, black 40%, transparent 100%);
 }
+
 .hero-content {
   position: relative;
   max-width: var(--max-w);
   margin: 0 auto;
   width: 100%;
-  padding: 80px 0;
+  padding: 80px var(--gutter);
   z-index: 2;
+  /* Content sits on left ~45% */
+  max-width: 48%;
+  margin-left: var(--gutter);
 }
+
+/* Override: full bleed layout needs content pinned left */
+@media (min-width: 769px) {
+  .hero-content {
+    margin-left: max(var(--gutter), calc((100vw - var(--max-w)) / 2));
+  }
+}
+
 .hero-eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -184,7 +225,7 @@ body {
   margin-bottom: 36px;
 }
 .hero-sub {
-  max-width: 520px;
+  max-width: 480px;
   font-size: 15px;
   font-weight: 300;
   color: var(--white-dim);
@@ -227,23 +268,23 @@ body {
 .hero-stats {
   position: relative;
   z-index: 2;
-  max-width: var(--max-w);
-  margin: 0 auto;
   width: 100%;
   border-top: 1px solid var(--border);
-  padding: 40px 0;
+  padding: 40px var(--gutter);
   display: flex;
   align-items: center;
   gap: 0;
+  /* Constrain to left content column visually */
+  max-width: 100%;
 }
 .stat {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 0 40px;
+  padding: 0 48px;
 }
-.stat:first-child { padding-left: 0; }
+.stat:first-child { padding-left: var(--gutter); }
 .stat-number {
   font-family: var(--font-display);
   font-size: 48px;
@@ -752,6 +793,9 @@ body {
   .briefs-grid { grid-template-columns: 1fr; }
   .brief-card { border-right: none; border-bottom: 1px solid var(--border); }
   .brief-card:last-child { border-bottom: none; }
+
+  .hero-content { max-width: 55%; }
+  .globe-img { width: clamp(340px, 48vw, 620px); height: clamp(340px, 48vw, 620px); }
 }
 
 @media (max-width: 768px) {
@@ -762,10 +806,28 @@ body {
   .nav-toggle { display: flex; }
   .nav-cta { align-self: flex-start; }
 
+  /* Hero — stack content, globe fades behind */
+  .hero { padding-top: var(--nav-h); min-height: 100svh; }
+  .hero-content {
+    max-width: 100%;
+    margin-left: 0;
+    padding: 60px var(--gutter) 40px;
+  }
+  .globe-img {
+    width: 90vw;
+    height: 90vw;
+    right: 50%;
+    top: auto;
+    bottom: -10%;
+    transform: translateX(50%);
+    opacity: 0.25;
+  }
+  .globe-glow { display: none; }
+
   .section > .split-layout,
   .section-split > .split-layout { grid-template-columns: 1fr; gap: 40px; }
 
-  .hero-stats { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .hero-stats { flex-direction: column; align-items: flex-start; gap: 24px; padding: 32px var(--gutter); }
   .stat { padding: 0; }
   .stat-divider { display: none; }
 
