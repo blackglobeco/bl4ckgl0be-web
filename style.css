@@ -142,6 +142,11 @@ body {
   justify-content: center;
   overflow: hidden;
   padding: var(--nav-h) var(--gutter) 0;
+  background: radial-gradient(ellipse 70% 80% at 78% 48%,
+    rgba(10,20,60,0.55) 0%,
+    rgba(5,8,25,0.3) 50%,
+    transparent 100%),
+    var(--black);
 }
 .hero-bg {
   position: absolute;
@@ -152,13 +157,15 @@ body {
   pointer-events: none;
 }
 #globeCanvas {
-  width: 60vmin;
-  height: 60vmin;
-  max-width: 700px;
-  max-height: 700px;
-  opacity: 0.18;
-  transform: translateX(15%);
+  width: clamp(480px, 72vmin, 860px);
+  height: clamp(480px, 72vmin, 860px);
+  opacity: 1;
+  transform: translateX(12%) translateY(-2%);
+  cursor: grab;
+  pointer-events: all;
+  filter: brightness(1.05);
 }
+#globeCanvas:active { cursor: grabbing; }
 .hero-content {
   position: relative;
   max-width: var(--max-w);
