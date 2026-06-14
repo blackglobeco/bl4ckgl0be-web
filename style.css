@@ -56,14 +56,7 @@ body {
   color: var(--white);
   flex-shrink: 0;
 }
-/* PNG icon — black bg disappears via screen blend on dark navbar */
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  mix-blend-mode: screen;
-  flex-shrink: 0;
-}
+.logo-globe { font-size: 10px; color: var(--accent); }
 .logo-text {
   font-family: var(--font-display);
   font-size: 22px;
@@ -119,43 +112,51 @@ body {
   background: var(--black);
   display: flex;
   align-items: center;
-  padding-top: 10vh;
+  padding-top: 10vh; /* shift text slightly below true center like NSO */
 }
 
-/* ── Globe — right side, vertically centered ── */
+/* ── Globe — spans right 65% of viewport, true center ── */
 .hero-globe-wrap {
   position: absolute;
+  /* start from 30% left so globe center lands at ~65% of viewport */
   top: 0;
-  left: 38%;
+  left: 30%;
   right: 0;
   height: 100%;
   pointer-events: none;
   overflow: visible;
 }
 
-/* Grey ambient glow */
 .globe-glow {
   position: absolute;
   inset: -10%;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(120, 120, 120, 0.18) 0%,
-    rgba(80, 80, 80, 0.08) 45%,
+    rgba(110, 4, 4, 0.20) 0%,
+    rgba(50, 0, 0, 0.08) 45%,
     transparent 70%
   );
 }
 
+/*
+ * GIF is 500×500 white-on-white.
+ * mix-blend-mode:screen makes the white background disappear on dark bg.
+ * We scale it very large (vh-based) so it fills the right side like NSO.
+ * No mask — let it breathe; the screen blend handles the bg.
+ */
 .globe-img {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  /* Size relative to viewport height so it always fills the screen */
   width: 90vh;
   height: 90vh;
-  max-width: none;
+  max-width: none;   /* allow it to exceed % constraints */
   object-fit: contain;
   mix-blend-mode: screen;
   opacity: 1;
+  /* Very subtle left-edge fade only, to prevent text overlap */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -170,7 +171,7 @@ body {
   );
 }
 
-/* ── Text — left, vertically centered ── */
+/* ── Text content — left, vertically centered-lower like NSO ── */
 .hero-content {
   position: relative;
   z-index: 2;
@@ -185,16 +186,16 @@ body {
   }
 }
 
-/* Eyebrow — white */
 .hero-eyebrow {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.24em;
-  color: var(--white-dim);
+  color: var(--accent);
   text-transform: uppercase;
   margin-bottom: 18px;
 }
 
+/* NSO title: medium weight, not bold display, ~28-32px equivalent */
 .hero-title {
   font-family: var(--font-body);
   font-size: clamp(20px, 2.2vw, 32px);
@@ -206,14 +207,14 @@ body {
   margin-bottom: 0;
 }
 
-/* Rule line — white */
 .hero-rule {
   width: 36px;
   height: 2px;
-  background: var(--white);
+  background: var(--accent);
   margin: 20px 0;
 }
 
+/* NSO body text: light weight, comfortable line-length */
 .hero-sub {
   font-size: clamp(13px, 1.1vw, 15px);
   font-weight: 300;
