@@ -132,8 +132,8 @@ body {
   inset: -10%;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(60, 60, 60, 0.22) 0%,
-    rgba(30, 30, 30, 0.10) 45%,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(200, 200, 200, 0.04) 45%,
     transparent 70%
   );
 }
