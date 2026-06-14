@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════
    BLACK GLOBE — main.js
-   UI interactions
    ═══════════════════════════════════════════ */
 
 // ── NAVBAR SCROLL ──────────────────────────
@@ -11,19 +10,14 @@ window.addEventListener('scroll', () => {
 
 // ── MOBILE NAV TOGGLE ──────────────────────
 const navToggle = document.getElementById('navToggle');
-const navLinks = document.getElementById('navLinks');
-navToggle.addEventListener('click', () => {
-  navLinks.classList.toggle('open');
-});
+const navLinks  = document.getElementById('navLinks');
+navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
 navLinks.querySelectorAll('a').forEach(a => {
   a.addEventListener('click', () => navLinks.classList.remove('open'));
 });
 
 // ── SCROLL REVEAL ──────────────────────────
-const revealEls = document.querySelectorAll(
-  '.cap-card, .brief-card, .pillar, .about-card, .stat'
-);
-
+const revealEls = document.querySelectorAll('.cap-card, .pillar, .stat');
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
@@ -32,11 +26,11 @@ const observer = new IntersectionObserver((entries) => {
       observer.unobserve(e.target);
     }
   });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.1, rootMargin: '0px 0px -32px 0px' });
 
 revealEls.forEach((el, i) => {
   el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = `opacity 0.5s ease ${i * 0.05}s, transform 0.5s ease ${i * 0.05}s`;
+  el.style.transform = 'translateY(18px)';
+  el.style.transition = `opacity 0.5s ease ${i * 0.04}s, transform 0.5s ease ${i * 0.04}s`;
   observer.observe(el);
 });
