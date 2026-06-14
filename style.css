@@ -118,9 +118,9 @@ body {
 /* ── Globe — spans right 65% of viewport, true center ── */
 .hero-globe-wrap {
   position: absolute;
-  /* start from 30% left so globe center lands at ~65% of viewport */
+  /* start from 38% left so globe sits further right */
   top: 0;
-  left: 30%;
+  left: 38%;
   right: 0;
   height: 100%;
   pointer-events: none;
@@ -132,8 +132,8 @@ body {
   inset: -10%;
   background: radial-gradient(
     circle at 50% 50%,
-    rgba(110, 4, 4, 0.20) 0%,
-    rgba(50, 0, 0, 0.08) 45%,
+    rgba(60, 60, 60, 0.22) 0%,
+    rgba(30, 30, 30, 0.10) 45%,
     transparent 70%
   );
 }
@@ -190,7 +190,7 @@ body {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.24em;
-  color: var(--accent);
+  color: var(--white-dim);
   text-transform: uppercase;
   margin-bottom: 18px;
 }
@@ -210,7 +210,7 @@ body {
 .hero-rule {
   width: 36px;
   height: 2px;
-  background: var(--accent);
+  background: var(--white);
   margin: 20px 0;
 }
 
