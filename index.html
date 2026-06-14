@@ -1,369 +1,472 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-  <meta name="description" content="Black Globe — Cyber intelligence for global security and stability." />
-  <title>BLACK GLOBE — Cyber Intelligence</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+  <title>BLACK GLOBE — Cyber Intelligence for Global Security and Stability</title>
+  <meta name="description" content="Black Globe creates technology that helps government agencies prevent and investigate terrorism and crime to save thousands of lives around the globe.">
+
+  <!-- AOS — Animate On Scroll (same as NSO) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+
+  <!-- Google Fonts — matching NSO's clean sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Three.js (same as NSO uses) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+<div id="wrapper">
 
-  <!-- NAV -->
-  <nav id="navbar">
-    <div class="nav-inner">
-      <a href="#" class="nav-logo">
-        <span class="logo-globe">⬤</span>
-        <span class="logo-text">BLACK GLOBE</span>
-      </a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links" id="navLinks">
-        <li><a href="#about">About</a></li>
-        <li><a href="#capabilities">Capabilities</a></li>
-        <li><a href="#governance">Governance</a></li>
-        <li><a href="#intelligence">Intelligence</a></li>
-        <li><a href="#contact" class="nav-cta">Contact</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <!-- HERO -->
-  <section class="hero" id="hero">
-    <div class="hero-bg">
-      <canvas id="globeCanvas"></canvas>
-    </div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">CYBER INTELLIGENCE GROUP</p>
-      <h1 class="hero-title">
-        Intelligence<br />
-        Without<br />
-        Borders.
-      </h1>
-      <p class="hero-sub">
-        Black Globe delivers sovereign-grade intelligence capabilities to governments and law enforcement agencies worldwide — enabling them to anticipate, detect, and neutralize threats before they materialize.
-      </p>
-      <div class="hero-actions">
-        <a href="#about" class="btn btn-primary">Our Mission</a>
-        <a href="#capabilities" class="btn btn-ghost">Capabilities</a>
-      </div>
-    </div>
-    <div class="hero-stats">
-      <div class="stat">
-        <span class="stat-number">60+</span>
-        <span class="stat-label">Nations Served</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <span class="stat-number">15K+</span>
-        <span class="stat-label">Operations Supported</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <span class="stat-number">24/7</span>
-        <span class="stat-label">Threat Monitoring</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- THREAT BANNER -->
-  <div class="threat-banner">
-    <div class="threat-inner">
-      <span class="threat-tag">GLOBAL THREAT LANDSCAPE</span>
-      <p>Adversarial actors, state-sponsored groups, and non-state threat networks operate with increasing sophistication — exploiting encrypted channels, dark infrastructure, and digital anonymity to evade conventional detection.</p>
-      <a href="#capabilities" class="threat-link">HOW WE RESPOND →</a>
-    </div>
-  </div>
-
-  <!-- ABOUT -->
-  <section class="section section-split" id="about">
-    <div class="section-label">01 — ABOUT</div>
-    <div class="split-layout">
-      <div class="split-left">
-        <h2 class="section-title">We Operate Where Others Cannot.</h2>
-      </div>
-      <div class="split-right">
-        <p class="body-large">Black Globe was founded on a singular mandate: to give those who protect nations the technological edge necessary to stay ahead of an evolving threat landscape.</p>
-        <p class="body">Our team consists of veteran intelligence officers, cryptographers, network engineers, and behavioral analysts — each with deep operational backgrounds across signals intelligence, human intelligence, and cyber operations.</p>
-        <p class="body">We do not operate in the open market. Every engagement is vetted, every client is a government-sanctioned authority, and every deployment is governed by our strict ethical and legal framework.</p>
-        <a href="#governance" class="text-link">Our Governance Framework →</a>
-      </div>
-    </div>
-    <div class="about-visual">
-      <div class="about-grid">
-        <div class="about-card">
-          <span class="card-num">EST.</span>
-          <span class="card-big">2009</span>
-          <span class="card-desc">Founded by intelligence and defense veterans</span>
+  <!-- ══ HEADER — same structure as NSO ══ -->
+  <header>
+    <!-- Vanta fog background layer — same as NSO's #fbg -->
+    <div style="opacity:0.09;" id="fbg"></div>
+    <div class="wrap">
+      <div class="flex" data-aos="fade-in" data-aos-easing="linear" data-aos-duration="1000">
+        <div class="logo">
+          <a href="#">
+            <svg width="160" height="44" viewBox="0 0 160 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Globe icon -->
+              <circle cx="22" cy="22" r="18" stroke="white" stroke-width="1.4"/>
+              <ellipse cx="22" cy="22" rx="7.5" ry="18" stroke="white" stroke-width="1.4"/>
+              <line x1="4" y1="22" x2="40" y2="22" stroke="white" stroke-width="1.4"/>
+              <line x1="6" y1="14" x2="38" y2="14" stroke="white" stroke-width="0.9"/>
+              <line x1="6" y1="30" x2="38" y2="30" stroke="white" stroke-width="0.9"/>
+              <!-- Text -->
+              <text x="50" y="17" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="13" fill="white" letter-spacing="3">BLACK</text>
+              <text x="50" y="33" font-family="Barlow Condensed, sans-serif" font-weight="300" font-size="13" fill="white" letter-spacing="3">GLOBE</text>
+              <text x="50" y="43" font-family="Barlow, sans-serif" font-weight="300" font-size="7" fill="rgba(255,255,255,0.45)" letter-spacing="2.5">CYBER INTELLIGENCE</text>
+            </svg>
+          </a>
         </div>
-        <div class="about-card">
-          <span class="card-num">HQ</span>
-          <span class="card-big">CLASSIFIED</span>
-          <span class="card-desc">Operations in five continents</span>
-        </div>
-        <div class="about-card">
-          <span class="card-num">CLEARANCE</span>
-          <span class="card-big">TOP SECRET</span>
-          <span class="card-desc">All personnel security-cleared</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CAPABILITIES -->
-  <section class="section section-dark" id="capabilities">
-    <div class="section-label">02 — CAPABILITIES</div>
-    <h2 class="section-title centered">Intelligence. Precision. Reach.</h2>
-    <p class="section-intro">Black Globe deploys a layered suite of cyber intelligence capabilities — each engineered for sovereign-grade performance and lawful, accountable use.</p>
-
-    <div class="capabilities-grid">
-
-      <div class="cap-card">
-        <div class="cap-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M4 24h40M24 4c-5 8-5 28 0 40M24 4c5 8 5 28 0 40M8.5 12h27M8.5 36h27" stroke="currentColor" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <h3 class="cap-title">SIGINT & Network Surveillance</h3>
-        <p class="cap-body">Passive and active signals collection across encrypted and cleartext communications infrastructure. Real-time analysis of network traffic at scale.</p>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="8" y="8" width="32" height="32" rx="2" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M16 20l6 6 10-10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8 32h32" stroke="currentColor" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <h3 class="cap-title">Endpoint Intelligence</h3>
-        <p class="cap-body">Covert collection from targeted devices — mobile and desktop. Extraction of communications, location data, and behavioral patterns from hardened endpoints.</p>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="16" r="6" stroke="currentColor" stroke-width="1.5"/>
-            <circle cx="8" cy="38" r="4" stroke="currentColor" stroke-width="1.5"/>
-            <circle cx="40" cy="38" r="4" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M18 22L10 34M30 22L38 34M14 38h20" stroke="currentColor" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <h3 class="cap-title">Threat Actor Attribution</h3>
-        <p class="cap-body">Multi-vector analysis combining network forensics, behavioral fingerprinting, and OSINT to attribute cyber operations to state or non-state actors with high confidence.</p>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M24 4L4 14v10c0 11 8.7 21.3 20 24 11.3-2.7 20-13 20-24V14L24 4z" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M16 24l5 5 11-11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <h3 class="cap-title">Critical Infrastructure Protection</h3>
-        <p class="cap-body">Persistent monitoring and hardening of national critical infrastructure — energy grids, financial systems, and communications backbone — against adversarial intrusion.</p>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="3" fill="currentColor"/>
-            <circle cx="24" cy="24" r="10" stroke="currentColor" stroke-width="1.5"/>
-            <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
-            <path d="M24 4v4M24 40v4M4 24h4M40 24h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <h3 class="cap-title">Geospatial & Location Intelligence</h3>
-        <p class="cap-body">Real-time and historical location tracking fused with signals and open-source data to build comprehensive movement profiles of persons of interest.</p>
-      </div>
-
-      <div class="cap-card">
-        <div class="cap-icon">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 36L18 24l8 8 16-20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
-            <rect x="36" y="36" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.5"/>
-          </svg>
-        </div>
-        <h3 class="cap-title">Predictive Threat Analytics</h3>
-        <p class="cap-body">Machine-learning models trained on classified datasets to forecast threat actor behavior, anticipate attack vectors, and generate actionable intelligence before incidents occur.</p>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- GOVERNANCE -->
-  <section class="section" id="governance">
-    <div class="section-label">03 — GOVERNANCE</div>
-    <div class="split-layout">
-      <div class="split-left">
-        <h2 class="section-title">Lawful. Accountable. Responsible.</h2>
-      </div>
-      <div class="split-right">
-        <p class="body-large">Power without accountability is a threat in itself. Black Globe holds its capabilities to the same standard it applies to the threats it investigates.</p>
-        <p class="body">All deployments require verified government authorization, documented legal frameworks, and defined scope limitations. Our internal compliance team audits every active engagement on a rolling basis.</p>
-        <p class="body">We maintain a zero-tolerance policy for misuse, and reserve the right to suspend or terminate access to any client that violates our terms of engagement — regardless of contract obligations.</p>
-      </div>
-    </div>
-
-    <div class="pillars">
-      <div class="pillar">
-        <div class="pillar-line"></div>
-        <h4>Human Rights Policy</h4>
-        <p>Our operations are governed by international human rights law. We conduct mandatory due diligence before and during all engagements.</p>
-      </div>
-      <div class="pillar">
-        <div class="pillar-line"></div>
-        <h4>Transparency Reports</h4>
-        <p>We publish annual transparency disclosures outlining the scope of our deployments, misuse investigations, and internal compliance outcomes.</p>
-      </div>
-      <div class="pillar">
-        <div class="pillar-line"></div>
-        <h4>Whistleblower Protection</h4>
-        <p>Anonymous reporting channels exist for personnel and external parties to flag potential misuse without fear of retaliation.</p>
-      </div>
-      <div class="pillar">
-        <div class="pillar-line"></div>
-        <h4>Supply Chain Integrity</h4>
-        <p>All hardware and software components are vetted for country of origin, security posture, and potential vectors of compromise.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- INTELLIGENCE TICKER -->
-  <div class="ticker-wrapper">
-    <div class="ticker-label">ACTIVE THREAT DOMAINS</div>
-    <div class="ticker-track">
-      <div class="ticker-inner">
-        <span>RANSOMWARE NETWORKS</span>
-        <span class="dot">●</span>
-        <span>DARK WEB MARKETS</span>
-        <span class="dot">●</span>
-        <span>STATE-SPONSORED APTs</span>
-        <span class="dot">●</span>
-        <span>CRITICAL INFRASTRUCTURE ATTACKS</span>
-        <span class="dot">●</span>
-        <span>DISINFORMATION CAMPAIGNS</span>
-        <span class="dot">●</span>
-        <span>ENCRYPTED TERRORIST COMMS</span>
-        <span class="dot">●</span>
-        <span>FINANCIAL CYBERCRIME</span>
-        <span class="dot">●</span>
-        <span>SUPPLY CHAIN EXPLOITS</span>
-        <span class="dot">●</span>
-        <span>RANSOMWARE NETWORKS</span>
-        <span class="dot">●</span>
-        <span>DARK WEB MARKETS</span>
-        <span class="dot">●</span>
-        <span>STATE-SPONSORED APTs</span>
-        <span class="dot">●</span>
-        <span>CRITICAL INFRASTRUCTURE ATTACKS</span>
-        <span class="dot">●</span>
-        <span>DISINFORMATION CAMPAIGNS</span>
-        <span class="dot">●</span>
-        <span>ENCRYPTED TERRORIST COMMS</span>
-        <span class="dot">●</span>
-        <span>FINANCIAL CYBERCRIME</span>
-        <span class="dot">●</span>
-        <span>SUPPLY CHAIN EXPLOITS</span>
-        <span class="dot">●</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- INTELLIGENCE SECTION -->
-  <section class="section section-dark" id="intelligence">
-    <div class="section-label">04 — INTELLIGENCE BRIEFS</div>
-    <h2 class="section-title centered">Situational Awareness.</h2>
-    <p class="section-intro">Selected public intelligence assessments from Black Globe analysts.</p>
-
-    <div class="briefs-grid">
-      <article class="brief-card">
-        <span class="brief-tag">CYBER OPERATIONS</span>
-        <h3>The Proliferation of Commercial Spyware and the Erosion of Secure Communications</h3>
-        <p>An assessment of how non-state acquisition of offensive cyber tools is reshaping the threat landscape for enterprises and governments alike.</p>
-        <span class="brief-date">MAY 2025</span>
-      </article>
-      <article class="brief-card">
-        <span class="brief-tag">INFRASTRUCTURE</span>
-        <h3>Grid Vulnerabilities: How Nation-State Actors Are Pre-Positioning in Energy Networks</h3>
-        <p>Evidence of persistent access implants discovered across six national power grids, attributed to a cluster of overlapping threat actors.</p>
-        <span class="brief-date">APR 2025</span>
-      </article>
-      <article class="brief-card">
-        <span class="brief-tag">DARK WEB</span>
-        <h3>Fentanyl Trafficking Networks and Their Digital Supply Chains</h3>
-        <p>How encrypted messaging and cryptocurrency have enabled a new generation of transnational drug networks to operate with near-total impunity.</p>
-        <span class="brief-date">MAR 2025</span>
-      </article>
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <section class="section section-contact" id="contact">
-    <div class="contact-inner">
-      <div class="section-label">05 — CONTACT</div>
-      <h2 class="section-title">Authorized Inquiries Only.</h2>
-      <p class="body-large">Black Globe does not accept unsolicited inquiries from private entities or individuals. All engagements are initiated through government procurement channels.</p>
-      <p class="body">If you represent a government agency, law enforcement authority, or defense ministry, contact our government relations team through your designated secure channel or complete the form below.</p>
-      <div class="contact-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Agency / Ministry</label>
-            <input type="text" placeholder="Name of your agency" />
+        <div class="hmenu">
+          <div class="tglmenu" id="tglmenu">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
-          <div class="form-group">
-            <label>Country</label>
-            <input type="text" placeholder="Country of operation" />
+          <ul id="menu-header" class="menu">
+            <li><a href="#about">About us</a></li>
+            <li class="has-sub">
+              <a href="#governance">Governance</a>
+              <ul class="sub-menu">
+                <li><a href="#governance">Human Rights Policy</a></li>
+                <li><a href="#governance">Transparency</a></li>
+                <li><a href="#governance">Whistleblower Policies</a></li>
+                <li><a href="#governance">Supply Chain</a></li>
+              </ul>
+            </li>
+            <li><a href="#news">News</a></li>
+            <li><a href="#careers">Careers</a></li>
+            <li><a href="#contact">Contact us</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="home">
+
+    <!-- ══ BANNER — Three.js globe in #container, same as NSO ══ -->
+    <section class="section banner">
+      <div id="container"></div>
+      <div class="wrap">
+        <div class="caption">
+          <h1 class="pinkline"
+            data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+            Cyber Intelligence for <br>Global Security and Stability
+          </h1>
+          <p data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1100">
+            Black Globe creates technology that helps government agencies<br>
+            prevent and investigate terrorism and crime to save<br>
+            thousands of lives around the globe.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ SECTION 1 — Global Threats (odd, image left) ══ -->
+    <section class="section" id="about">
+      <div class="content flex">
+        <div class="image">
+          <!-- Tactical grid panel — replaces NSO's photo -->
+          <div class="panel-visual panel-dark">
+            <div class="panel-grid"></div>
+            <div class="panel-data">
+              <div class="pd-row">
+                <span class="pd-label">ACTIVE NODES</span>
+                <span class="pd-val" data-target="48291">0</span>
+              </div>
+              <div class="pd-row">
+                <span class="pd-label">THREATS INTERCEPTED / 24H</span>
+                <span class="pd-val" data-target="12847">0</span>
+              </div>
+              <div class="pd-row">
+                <span class="pd-label">NATIONS COVERED</span>
+                <span class="pd-val" data-target="60">0</span>
+              </div>
+              <div class="pd-row">
+                <span class="pd-label">UPTIME</span>
+                <span class="pd-val">99.98%</span>
+              </div>
+            </div>
+            <div class="panel-radar">
+              <div class="radar-ring r1"></div>
+              <div class="radar-ring r2"></div>
+              <div class="radar-ring r3"></div>
+              <div class="radar-sweep-arm"></div>
+              <div class="radar-dot d1"></div>
+              <div class="radar-dot d2"></div>
+              <div class="radar-dot d3"></div>
+            </div>
           </div>
         </div>
-        <div class="form-group">
-          <label>Official Contact Email</label>
-          <input type="email" placeholder="yourname@agency.gov" />
+        <div class="mobileimg">
+          <div class="panel-visual panel-dark small"></div>
         </div>
-        <div class="form-group">
-          <label>Nature of Inquiry</label>
-          <textarea rows="4" placeholder="Briefly describe your operational requirements..."></textarea>
+        <div class="caption" id="stars">
+          <div id="stars-canvas"></div>
+          <div>
+            <div class="section-name"
+              data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">GLOBAL THREATS</div>
+            <h3
+              data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              TERRORISTS AND CRIMINALS<br>HAVE GONE DARK
+            </h3>
+            <div data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              <p>Terrorists, drug traffickers, pedophiles, and other criminals have access to advanced technology and are harder to monitor, track, and capture than ever before.</p>
+              <p>The world's most dangerous offenders communicate using technology designed to shield their communications, while government intelligence and law-enforcement agencies struggle to collect evidence and intelligence on their activities.</p>
+              <p>Due to these ongoing global concerns, the member nations of the Five Eyes (FVEY) intelligence alliance warn that, <em>"The increasing gap between the ability of law enforcement to lawfully access data and their ability to acquire and use the content of that data is a pressing international concern that requires urgent, sustained attention."</em></p>
+            </div>
+            <div class="btnholder"
+              data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              <a href="#about" class="more">MORE ABOUT US</a>
+            </div>
+          </div>
         </div>
-        <button class="btn btn-primary btn-submit">Submit Secure Inquiry</button>
-        <p class="form-note">All submissions are encrypted in transit. We respond only to verified government domains.</p>
+      </div>
+    </section>
+
+    <!-- ══ SECTION 2 — Our Technology (even, image right) ══ -->
+    <section class="section even" id="technology">
+      <div class="content flex">
+        <div class="image">
+          <div class="panel-visual panel-teal">
+            <canvas class="tech-canvas" id="techCanvas"></canvas>
+            <div class="tech-label">SIGNAL INTERCEPT NETWORK</div>
+          </div>
+        </div>
+        <div class="mobileimg">
+          <div class="panel-visual panel-teal small"></div>
+        </div>
+        <div class="caption" style="background-image: url();">
+          <div id="starsb" style="width:100%;height:100%;position:absolute;top:0;left:0;"></div>
+          <div>
+            <div class="section-name"
+              data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">OUR TECHNOLOGY</div>
+            <h3 data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              HELPING GOVERNMENTS<br>MAINTAIN PUBLIC SAFETY
+            </h3>
+            <div data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              <p>Black Globe develops best-in-class technology to help government agencies detect and prevent a wide range of local and global threats.</p>
+              <p>Our products help government intelligence and law-enforcement agencies use technology to meet the challenges of encryption to prevent and investigate terror and crime.</p>
+              <p>Black Globe technology is designed by telecommunications and intelligence experts who, positioned at the forefront of their fields, are dedicated to keeping pace with the ever-changing cyber world.</p>
+            </div>
+            <div class="btnholder"
+              data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              <a href="#contact" class="more">MORE ABOUT US</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CAPABILITIES GRID ══ -->
+    <section class="section cap-section" id="capabilities">
+      <div class="wrap">
+        <div class="section-name" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">CAPABILITIES</div>
+        <h3 data-aos="fade-up" data-aos-easing="linear" data-aos-duration="900">Intelligence. Precision. Reach.</h3>
+        <div class="cap-grid">
+          <div class="cap-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="0">
+            <div class="cap-num">01</div>
+            <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.3"/><path d="M4 24h40M24 4c-5 8-5 28 0 40M24 4c5 8 5 28 0 40M8 12h32M8 36h32" stroke="currentColor" stroke-width="1.3"/></svg>
+            <h4>SIGINT &amp; Network Surveillance</h4>
+            <p>Passive and active signals collection across encrypted and cleartext infrastructure. Real-time analysis at national scale.</p>
+          </div>
+          <div class="cap-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="80">
+            <div class="cap-num">02</div>
+            <svg viewBox="0 0 48 48" fill="none"><rect x="8" y="10" width="32" height="28" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M16 20l6 6 10-10M8 30h32" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h4>Endpoint Intelligence</h4>
+            <p>Covert collection from targeted mobile and desktop devices. Extraction of communications, location and behavioral patterns.</p>
+          </div>
+          <div class="cap-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="160">
+            <div class="cap-num">03</div>
+            <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="14" r="6" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="38" r="4" stroke="currentColor" stroke-width="1.3"/><circle cx="40" cy="38" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M18 20L10 34M30 20L38 34M13 38h22" stroke="currentColor" stroke-width="1.3"/></svg>
+            <h4>Threat Actor Attribution</h4>
+            <p>Multi-vector forensic analysis combining network data, behavioral fingerprinting, and OSINT for high-confidence attribution.</p>
+          </div>
+          <div class="cap-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="240">
+            <div class="cap-num">04</div>
+            <svg viewBox="0 0 48 48" fill="none"><path d="M24 4L4 14v10c0 11 8.7 21.3 20 24 11.3-2.7 20-13 20-24V14L24 4z" stroke="currentColor" stroke-width="1.3"/><path d="M15 24l6 6 12-12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h4>Infrastructure Protection</h4>
+            <p>Persistent monitoring of national energy grids, financial systems and communications backbone against adversarial intrusion.</p>
+          </div>
+          <div class="cap-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="320">
+            <div class="cap-num">05</div>
+            <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="4" fill="currentColor"/><circle cx="24" cy="24" r="11" stroke="currentColor" stroke-width="1.3"/><circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="0.9" stroke-dasharray="3 3"/><path d="M24 4v4M24 40v4M4 24h4M40 24h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <h4>Geospatial Intelligence</h4>
+            <p>Real-time and historical location tracking fused with signals data for comprehensive movement profiling of persons of interest.</p>
+          </div>
+          <div class="cap-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="400">
+            <div class="cap-num">06</div>
+            <svg viewBox="0 0 48 48" fill="none"><path d="M6 36L18 24l8 8 16-20" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="9" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="36" y="36" width="9" height="9" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+            <h4>Predictive Threat Analytics</h4>
+            <p>Machine-learning models trained on classified datasets to forecast threat actor behavior and generate actionable intelligence.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ TRANSPARENCY BANNER — same pink as NSO ══ -->
+    <div class="first_annual">
+      <a href="#governance">Annual Transparency &amp; Responsibility Report — Read the report that highlights safeguards against misuse of our technology, and outlines internal governance and compliance processes</a>
+    </div>
+
+    <!-- ══ GOVERNANCE ══ -->
+    <section class="section gov-section" id="governance">
+      <div class="wrap">
+        <div class="section-name" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">GOVERNANCE</div>
+        <h3 data-aos="fade-up" data-aos-easing="linear" data-aos-duration="900">Lawful. Accountable. Responsible.</h3>
+        <p class="gov-sub" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">Power without accountability is a threat in itself. Black Globe holds its capabilities to the same standard it applies to the threats it investigates.</p>
+        <div class="gov-grid">
+          <div class="gov-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="0">
+            <div class="gov-accent"></div>
+            <svg viewBox="0 0 36 36" fill="none"><path d="M18 3L3 10v7c0 8 6.5 15 15 17 8.5-2 15-9 15-17v-7L18 3z" stroke="currentColor" stroke-width="1.3"/></svg>
+            <h4>Human Rights Policy</h4>
+            <p>Our operations are governed by international human rights law. We conduct mandatory due diligence before and during all engagements.</p>
+            <a href="#" class="gov-link">LEARN MORE</a>
+          </div>
+          <div class="gov-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="100">
+            <div class="gov-accent"></div>
+            <svg viewBox="0 0 36 36" fill="none"><rect x="4" y="4" width="28" height="28" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M10 18l5 5 11-11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h4>Transparency Reports</h4>
+            <p>We publish annual transparency disclosures outlining the scope of deployments, misuse investigations and internal compliance outcomes.</p>
+            <a href="#" class="gov-link">LEARN MORE</a>
+          </div>
+          <div class="gov-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="200">
+            <div class="gov-accent"></div>
+            <svg viewBox="0 0 36 36" fill="none"><circle cx="18" cy="10" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M6 32c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="currentColor" stroke-width="1.3"/><path d="M18 22v8M14 28l4-4 4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h4>Whistleblower Protection</h4>
+            <p>Anonymous reporting channels exist for personnel and external parties to flag potential misuse without fear of retaliation.</p>
+            <a href="#" class="gov-link">LEARN MORE</a>
+          </div>
+          <div class="gov-item" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="300">
+            <div class="gov-accent"></div>
+            <svg viewBox="0 0 36 36" fill="none"><path d="M6 10h24M6 18h24M6 26h24M10 4v28M26 4v28" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <h4>Supply Chain Integrity</h4>
+            <p>All hardware and software components are vetted for country of origin, security posture and potential vectors of compromise.</p>
+            <a href="#" class="gov-link">LEARN MORE</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ STATS ══ -->
+    <div class="stats-band">
+      <div class="wrap">
+        <div class="stats-flex">
+          <div class="stat-block" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">
+            <span class="stat-num" data-target="60">0</span><span class="stat-suf">+</span>
+            <span class="stat-lbl">Nations Served</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-block" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="100">
+            <span class="stat-num" data-target="15">0</span><span class="stat-suf">K+</span>
+            <span class="stat-lbl">Operations Supported</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-block" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="200">
+            <span class="stat-num">24</span><span class="stat-suf">/7</span>
+            <span class="stat-lbl">Threat Monitoring</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-block" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="300">
+            <span class="stat-num" data-target="500">0</span><span class="stat-suf">+</span>
+            <span class="stat-lbl">Engineers &amp; Analysts</span>
+          </div>
+        </div>
       </div>
     </div>
-  </section>
 
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-top">
-        <a href="#" class="footer-logo">
-          <span class="logo-globe">⬤</span>
-          <span class="logo-text">BLACK GLOBE</span>
-        </a>
-        <nav class="footer-nav">
-          <a href="#about">About Us</a>
-          <a href="#capabilities">Capabilities</a>
-          <a href="#governance">Governance</a>
-          <a href="#intelligence">Intelligence</a>
-          <a href="#contact">Contact</a>
-        </nav>
+    <!-- ══ NEWS ══ -->
+    <section class="section news-section" id="news">
+      <div class="wrap">
+        <div class="section-name" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">INTELLIGENCE BRIEFS</div>
+        <h3 data-aos="fade-up" data-aos-easing="linear" data-aos-duration="900">Situational Awareness.</h3>
+        <div class="news-grid">
+          <article class="news-card" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="0">
+            <div class="nc-visual nv-blue"></div>
+            <div class="nc-body">
+              <span class="nc-tag">CYBER OPERATIONS</span>
+              <span class="nc-date">MAY 2025</span>
+              <h4>The Proliferation of Commercial Spyware and the Erosion of Secure Communications</h4>
+              <p>An assessment of how non-state acquisition of offensive cyber tools is reshaping the threat landscape for enterprises and governments alike.</p>
+              <a href="#" class="more small">READ MORE</a>
+            </div>
+          </article>
+          <article class="news-card" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="120">
+            <div class="nc-visual nv-green"></div>
+            <div class="nc-body">
+              <span class="nc-tag">INFRASTRUCTURE</span>
+              <span class="nc-date">APR 2025</span>
+              <h4>Grid Vulnerabilities: Nation-State Actors Pre-Positioning in Energy Networks</h4>
+              <p>Persistent access implants discovered across six national power grids, attributed to overlapping threat actor clusters.</p>
+              <a href="#" class="more small">READ MORE</a>
+            </div>
+          </article>
+          <article class="news-card" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800" data-aos-delay="240">
+            <div class="nc-visual nv-red"></div>
+            <div class="nc-body">
+              <span class="nc-tag">DARK WEB</span>
+              <span class="nc-date">MAR 2025</span>
+              <h4>Fentanyl Trafficking Networks and Their Encrypted Digital Supply Chains</h4>
+              <p>How encrypted messaging and cryptocurrency enabled transnational drug networks to operate with near-total impunity.</p>
+              <a href="#" class="more small">READ MORE</a>
+            </div>
+          </article>
+        </div>
       </div>
-      <div class="footer-divider"></div>
-      <div class="footer-bottom">
-        <p class="footer-legal">© 2025 Black Globe Cyber Intelligence Group. All rights reserved. Operations classified.</p>
-        <div class="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms & Conditions</a>
-          <a href="#">Legal Notices</a>
+    </section>
+
+    <!-- ══ CAREERS ══ -->
+    <section class="section careers-section" id="careers">
+      <div class="wrap">
+        <div class="careers-flex">
+          <div class="careers-text">
+            <div class="section-name" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">CAREERS</div>
+            <h3 data-aos="fade-up" data-aos-easing="linear" data-aos-duration="900">Join the Mission.</h3>
+            <p data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">We recruit from the world's foremost intelligence, cryptography and engineering communities. Every role at Black Globe carries consequence.</p>
+            <div class="btnholder" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              <a href="#contact" class="more">VIEW OPEN POSITIONS</a>
+            </div>
+          </div>
+          <div class="careers-list" data-aos="fade-left" data-aos-easing="linear" data-aos-duration="1000">
+            <div class="career-item">
+              <span class="ci-tag">OPEN</span>
+              <span class="ci-role">Senior Intelligence Analyst</span>
+              <span class="ci-loc">Location Classified</span>
+            </div>
+            <div class="career-item">
+              <span class="ci-tag">OPEN</span>
+              <span class="ci-role">Principal Cryptographic Engineer</span>
+              <span class="ci-loc">Location Classified</span>
+            </div>
+            <div class="career-item">
+              <span class="ci-tag">OPEN</span>
+              <span class="ci-role">Network Exploitation Specialist</span>
+              <span class="ci-loc">Location Classified</span>
+            </div>
+            <div class="career-item">
+              <span class="ci-tag">OPEN</span>
+              <span class="ci-role">Geospatial Intelligence Officer</span>
+              <span class="ci-loc">Location Classified</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONTACT ══ -->
+    <section class="section contact-section" id="contact">
+      <div class="wrap">
+        <div class="contact-flex">
+          <div class="contact-text">
+            <div class="section-name" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">CONTACT US</div>
+            <h3 data-aos="fade-up" data-aos-easing="linear" data-aos-duration="900">Authorized<br>Inquiries Only.</h3>
+            <p data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">Black Globe does not accept unsolicited inquiries from private entities. All engagements are initiated through government procurement channels.</p>
+            <div class="contact-meta" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="1000">
+              <div class="cm-row"><span class="cm-lbl">ENCRYPTION</span><span class="cm-val">PGP / S-MIME</span></div>
+              <div class="cm-row"><span class="cm-lbl">RESPONSE TIME</span><span class="cm-val">72 HRS (GOV ONLY)</span></div>
+              <div class="cm-row"><span class="cm-lbl">CHANNEL</span><span class="cm-val">CLASSIFIED SECURE</span></div>
+            </div>
+          </div>
+          <div class="contact-form-wrap" data-aos="fade-left" data-aos-easing="linear" data-aos-duration="1000">
+            <form class="cform" onsubmit="return false">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Agency / Ministry</label>
+                  <input type="text" placeholder="Name of your agency">
+                </div>
+                <div class="form-group">
+                  <label>Country</label>
+                  <input type="text" placeholder="Country of operation">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Official Contact Email</label>
+                <input type="email" placeholder="yourname@agency.gov">
+              </div>
+              <div class="form-group">
+                <label>Nature of Inquiry</label>
+                <textarea rows="4" placeholder="Briefly describe your operational requirements..."></textarea>
+              </div>
+              <button type="submit" class="more full-btn">SUBMIT SECURE INQUIRY</button>
+              <p class="form-note">All submissions encrypted in transit. We respond only to verified government domains.</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /.home -->
+
+  <!-- ══ FOOTER — mirrors NSO's two-column fmenu + flogo ══ -->
+  <footer>
+    <div class="wrap">
+      <div class="flex">
+        <div class="foot-left"
+          data-aos="fade-right" data-aos-offset="20" data-aos-duration="800" data-aos-easing="ease-in-sine">
+          <ul class="fmenu">
+            <li><a href="#about">About us</a></li>
+            <li><a href="#governance">Governance</a></li>
+            <li><a href="#news">News</a></li>
+            <li><a href="#careers">Careers</a></li>
+          </ul>
+          <ul class="fmenu">
+            <li><a href="#contact">Contact us</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms &amp; Conditions</a></li>
+          </ul>
+        </div>
+        <div class="foot-right"
+          data-aos="fade-left" data-aos-offset="20" data-aos-duration="800" data-aos-easing="ease-in-sine">
+          <div class="flogo">
+            <svg width="140" height="40" viewBox="0 0 140 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="16" stroke="white" stroke-width="1.2" opacity="0.6"/>
+              <ellipse cx="20" cy="20" rx="6.5" ry="16" stroke="white" stroke-width="1.2" opacity="0.6"/>
+              <line x1="4" y1="20" x2="36" y2="20" stroke="white" stroke-width="1.2" opacity="0.6"/>
+              <line x1="6" y1="13" x2="34" y2="13" stroke="white" stroke-width="0.8" opacity="0.4"/>
+              <line x1="6" y1="27" x2="34" y2="27" stroke="white" stroke-width="0.8" opacity="0.4"/>
+              <text x="44" y="15" font-family="Barlow Condensed, sans-serif" font-weight="600" font-size="12" fill="white" opacity="0.6" letter-spacing="3">BLACK GLOBE</text>
+              <text x="44" y="28" font-family="Barlow, sans-serif" font-weight="300" font-size="7.5" fill="white" opacity="0.35" letter-spacing="2.5">CYBER INTELLIGENCE GROUP</text>
+              <text x="44" y="38" font-family="Barlow, sans-serif" font-weight="300" font-size="6.5" fill="white" opacity="0.25">© 2025 ALL RIGHTS RESERVED</text>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
   </footer>
 
-  <script src="main.js"></script>
+</div><!-- /#wrapper -->
+
+<!-- Libraries — same stack as NSO -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="main.js"></script>
 </body>
 </html>
