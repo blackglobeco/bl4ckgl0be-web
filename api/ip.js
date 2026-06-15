@@ -1,54 +1,46 @@
 // Vercel Edge Function — /api/ip
-// Reads Cloudflare headers to get visitor's real IP and geo data
+// Reads Cloudflare Pseudo IPv4 header to get visitor's real IPv4
 
 export const config = { runtime: 'edge' };
 
 export default function handler(req) {
   const h = req.headers;
 
-  // Cloudflare always sets cf-connecting-ip to the real client IP
-  // x-forwarded-for may contain a chain; first entry is the real client
-  const raw = h.get('cf-connecting-ip')
-           || h.get('x-forwarded-for')?.split(',')[0].trim()
-           || h.get('x-real-ip')
-           || h.get('x-vercel-forwarded-for')?.split(',')[0].trim()
-           || 'unknown';
-
-  // If Cloudflare sends IPv6 but the visitor has IPv4, it's often a
-  // 6to4 or Teredo address embedding an IPv4. Also handle ::ffff:x.x.x.x
-  // (IPv4-mapped IPv6). Extract the IPv4 portion when present.
-  var ip = raw;
-
-  // ::ffff:192.168.1.1  →  192.168.1.1
-  var mapped = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  if (mapped) ip = mapped[1];
-
-  // 2002:c0a8:0101::  →  192.168.1.1  (6to4)
-  var sixToFour = ip.match(/^2002:([0-9a-f]{2})([0-9a-f]{2}):([0-9a-f]{2})([0-9a-f]{2}):/i);
-  if (sixToFour) {
-    ip = [
-      parseInt(sixToFour[1], 16),
-      parseInt(sixToFour[2], 16),
-      parseInt(sixToFour[3], 16),
-      parseInt(sixToFour[4], 16)
-    ].join('.');
+  function isIPv4(s) { return /^\d{1,3}(\.\d{1,3}){3}$/.test((s||'').trim()); }
+  function unmapIPv4(s) {
+    var m = (s||'').match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+    return m ? m[1] : null;
   }
 
-  // Cloudflare geo headers — filled by CF on every proxied request
-  const city     = h.get('cf-ipcity')      || h.get('x-vercel-ip-city')                    || '';
-  const country  = h.get('cf-ipcountry')   || h.get('x-vercel-ip-country')                 || '';
-  const region   = h.get('cf-region')      || h.get('x-vercel-ip-country-region')           || '';
-  const timezone = h.get('cf-timezone')    || h.get('x-vercel-ip-timezone')                 || '';
-  const lat      = h.get('cf-iplatitude')  || h.get('x-vercel-ip-latitude')                 || '';
-  const lon      = h.get('cf-iplongitude') || h.get('x-vercel-ip-longitude')                || '';
-  const asn      = h.get('asn')            || '';
-  const postal   = h.get('cf-postal-code') || '';
-  const isIPv6   = ip.includes(':');
+  // Priority order — find the best IPv4:
+  // 1. CF-Pseudo-IPv4 (set when "Pseudo IPv4 → Add Header" is ON in Cloudflare)
+  // 2. CF-Connecting-IP if already IPv4
+  // 3. Unmapped ::ffff:x.x.x.x
+  // 4. First IPv4 in X-Forwarded-For
+  // 5. Fall back to whatever exists
+  const pseudo   = h.get('cf-pseudo-ipv4')   || '';
+  const cfIP     = h.get('cf-connecting-ip') || '';
+  const xff      = h.get('x-forwarded-for')  || '';
 
-  return new Response(JSON.stringify({
-    ip, raw, isIPv6,
-    city, country, region, timezone, lat, lon, asn, postal,
-  }), {
+  var ip = null;
+  if (isIPv4(pseudo))  ip = pseudo.trim();
+  if (!ip && isIPv4(cfIP)) ip = cfIP.trim();
+  if (!ip) ip = unmapIPv4(cfIP);
+  if (!ip) {
+    xff.split(',').forEach(function(p) {
+      if (!ip && isIPv4(p))        ip = p.trim();
+      if (!ip && unmapIPv4(p.trim())) ip = unmapIPv4(p.trim());
+    });
+  }
+  if (!ip) ip = cfIP || pseudo || 'unknown';
+
+  const city     = h.get('cf-ipcity')      || h.get('x-vercel-ip-city')             || '';
+  const country  = h.get('cf-ipcountry')   || h.get('x-vercel-ip-country')           || '';
+  const region   = h.get('cf-region')      || h.get('x-vercel-ip-country-region')    || '';
+  const timezone = h.get('cf-timezone')    || h.get('x-vercel-ip-timezone')           || '';
+  const asn      = h.get('asn')            || '';
+
+  return new Response(JSON.stringify({ ip, city, country, region, timezone, asn }), {
     status: 200,
     headers: {
       'Content-Type':                'application/json',
