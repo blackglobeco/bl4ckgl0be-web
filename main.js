@@ -103,75 +103,56 @@ document.addEventListener('click', (e) => {
     el.textContent = text || 'N/A';
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
-  function fillGeo(ip, isp, location, ipType) {
-    document.getElementById('wIpAddr').textContent = ip;
-    var cls = 'residential';
-    if (/proxy|vpn/i.test(ipType))       cls = 'proxy';
-    else if (/hosting|dc/i.test(ipType)) cls = 'hosting';
-    else if (/mobile/i.test(ipType))     cls = 'mobile';
-    setVal('wIpType',   ipType, cls);
+
+  function isIPv6(ip) { return ip && ip.indexOf(':') !== -1; }
+
+  // ── Fetch all data in parallel ──
+  // ipwho.is/  — gets whatever IP the browser uses (may be IPv6)
+  // ipwho.is/  with forced IPv4 URL — we pass the IP from the first call
+  //             but reversed: get IPv4 from a numeric-only URL trick
+
+  // Strategy: fetch ipwho.is (gets geo + ISP + current IP)
+  // Then separately fetch icanhazip.com/4 which is strictly IPv4-only via path
+  Promise.allSettled([
+    fetch('https://ipwho.is/').then(function(r){ return r.json(); }),
+    fetch('https://ipv4.icanhazip.com').then(function(r){ return r.text(); })
+  ]).then(function(results) {
+
+    var geo   = results[0].status === 'fulfilled' ? results[0].value : null;
+    var ipv4  = results[1].status === 'fulfilled' ? results[1].value.trim() : null;
+
+    // Validate IPv4 result
+    if (ipv4 && !/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) ipv4 = null;
+
+    // Display: prefer IPv4 if we got it, else show whatever ipwho.is returns
+    var displayIP = ipv4 || (geo && geo.ip) || 'Unavailable';
+    document.getElementById('wIpAddr').textContent = displayIP;
+
+    // IP type
+    var ipType = 'Residential', cls = 'residential';
+    if (geo && geo.connection) {
+      var org = (geo.connection.org || '').toLowerCase();
+      if (/vpn|proxy/i.test(org))                            { ipType = 'Proxy / VPN';   cls = 'proxy'; }
+      else if (/hosting|cloud|data.?cent|server/i.test(org)) { ipType = 'Hosting / DC';  cls = 'hosting'; }
+    }
+    // If still showing IPv6, label it
+    if (isIPv6(displayIP)) { ipType = 'IPv6 / Residential'; }
+    setVal('wIpType', ipType, cls);
     setVal('wHostname', 'N/A');
-    setVal('wIsp',      isp);
-    setVal('wLocation', location);
+
+    // ISP and Location from ipwho.is geo
+    if (geo && geo.success) {
+      var isp = (geo.connection && geo.connection.isp) ? geo.connection.isp : (geo.org || 'N/A');
+      var loc = [geo.city, geo.region, geo.country].filter(Boolean).join(', ');
+      setVal('wIsp',      isp);
+      setVal('wLocation', loc || 'N/A');
+    } else {
+      setVal('wIsp',      'N/A');
+      setVal('wLocation', 'N/A');
+    }
+
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
-  }
-
-  // After getting an IP, look up full geo via ipwho.is/{ip}
-  function geoLookup(ip) {
-    return fetch('https://ipwho.is/' + ip)
-      .then(function (r) { return r.json(); })
-      .then(function (g) {
-        if (!g.success) throw new Error('geo fail');
-        var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
-        var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
-        var type = 'Residential';
-        if (g.connection) {
-          var org = (g.connection.org || '').toLowerCase();
-          if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
-          else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
-        }
-        fillGeo(ip, isp, loc || 'N/A', type);
-      });
-  }
-
-  // ── STEP 1: api4.ipify.org ──────────────────────────────────────────
-  // This domain resolves ONLY to an IPv4 A record (no AAAA record exists).
-  // The browser is therefore physically forced to connect over IPv4,
-  // regardless of whether the network supports IPv6.
-  // This is the same technique used by many dual-stack detection tools.
-  // ────────────────────────────────────────────────────────────────────
-  fetch('https://api4.ipify.org?format=json')
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d.ip) throw new Error('no ip');
-      // d.ip is guaranteed IPv4 — now get full geo for it
-      return geoLookup(d.ip);
-    })
-    .catch(function () {
-      // Fallback: ipwho.is auto (may return IPv6 but better than nothing)
-      return fetch('https://ipwho.is/')
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          if (!d.success || !d.ip) throw new Error('fail');
-          var isp = (d.connection && d.connection.isp) ? d.connection.isp : 'N/A';
-          var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
-          fillGeo(d.ip, isp, loc || 'N/A', 'Residential');
-        });
-    })
-    .catch(function () {
-      // Last resort: ipapi.co
-      return fetch('https://ipapi.co/json/')
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          if (!d.ip || d.error) throw new Error('fail');
-          var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
-          fillGeo(d.ip, d.org || 'N/A', loc || 'N/A', 'Residential');
-        });
-    })
-    .catch(function () {
-      document.getElementById('wIpAddr').textContent = 'Unavailable';
-      setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
-    });
+  });
 
   // ── Connection — navigator.connection (same as c99.nl) ──
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
