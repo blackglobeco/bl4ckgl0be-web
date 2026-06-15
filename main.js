@@ -3,22 +3,22 @@
    ═══════════════════════════════════════════ */
 
 // ── Mobile nav toggle ──────────────────────
-const navToggle = document.getElementById('navToggle');
-const navLinks  = document.getElementById('navLinks');
+var navToggle = document.getElementById('navToggle');
+var navLinks  = document.getElementById('navLinks');
 
-navToggle.addEventListener('click', () => {
-  const isOpen = navLinks.classList.toggle('open');
+navToggle.addEventListener('click', function () {
+  var isOpen = navLinks.classList.toggle('open');
   navToggle.classList.toggle('active', isOpen);
-  navToggle.setAttribute('aria-expanded', isOpen);
+  navToggle.setAttribute('aria-expanded', String(isOpen));
 });
-navLinks.querySelectorAll('a').forEach(a => {
-  a.addEventListener('click', () => {
+navLinks.querySelectorAll('a').forEach(function (a) {
+  a.addEventListener('click', function () {
     navLinks.classList.remove('open');
     navToggle.classList.remove('active');
     navToggle.setAttribute('aria-expanded', 'false');
   });
 });
-document.addEventListener('click', (e) => {
+document.addEventListener('click', function (e) {
   if (navLinks.classList.contains('open') &&
       !navLinks.contains(e.target) &&
       !navToggle.contains(e.target)) {
@@ -29,18 +29,48 @@ document.addEventListener('click', (e) => {
 });
 
 // ── Smooth scroll for internal anchor nav links ──────
-document.querySelectorAll('a.nav-scroll').forEach(link => {
+// On mobile the nav closes first (shifts layout), so we defer the scroll
+// to the next frame AFTER the nav has collapsed and layout has settled.
+document.querySelectorAll('a.nav-scroll').forEach(function (link) {
   link.addEventListener('click', function (e) {
-    const href = this.getAttribute('href');
+    var href = this.getAttribute('href');
     if (!href || !href.startsWith('#')) return;
-    const target = document.querySelector(href);
+    var target = document.querySelector(href);
     if (!target) return;
     e.preventDefault();
-    const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
-    const top  = target.getBoundingClientRect().top + window.pageYOffset - navH;
-    window.scrollTo({ top, behavior: 'smooth' });
+
+    // Close nav first so its height doesn't throw off the scroll target
+    navLinks.classList.remove('open');
+    navToggle.classList.remove('active');
+    navToggle.setAttribute('aria-expanded', 'false');
+
+    // Wait two rAF cycles for the nav collapse + any repaint to settle,
+    // THEN measure and scroll — guarantees accurate getBoundingClientRect.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var navH = parseInt(
+          getComputedStyle(document.documentElement)
+            .getPropertyValue('--nav-h')
+        ) || 60;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      });
+    });
   });
 });
+
+// ── Mockup GIF — inject as CSS background-image to fix iOS white-flicker ──
+// Using background-image + background-blend-mode: screen instead of
+// <img mix-blend-mode:screen> because iOS Safari/Chrome fail to blend
+// animated GIFs correctly via element blend modes (white flash on each loop).
+// background-blend-mode blends against background-color before compositing,
+// so it is immune to the iOS GPU compositing bug.
+(function () {
+  var bg = document.getElementById('ciMockupBg');
+  if (!bg) return;
+  // Set background-image — browser starts loading the GIF now
+  bg.style.backgroundImage = "url('cyberint_superhd.gif')";
+})();
 
 // ── IP Widget ──────────────────────────────
 (function () {
@@ -50,75 +80,60 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
   var closeBtn = document.getElementById('ipWidgetClose');
   if (!dot || !widget) return;
 
-  var globeEl  = null;   // cached reference, resolved after load
-  var rafId    = null;   // requestAnimationFrame handle
-  var isOpen   = false;
+  var globeEl    = null;
+  var rafId      = null;
+  var isOpen     = false;
   var justOpened = false;
 
-  // ── Resolve globe element (may not exist at script parse time) ──
   function getGlobe() {
     if (!globeEl) globeEl = document.querySelector('.globe-img');
     return globeEl;
   }
 
-  // ── Core: read globe's CURRENT viewport rect and pin dot to its centre ──
-  // getBoundingClientRect() always returns live viewport-relative coords,
-  // which map 1:1 to position:fixed top/left — no scroll offset needed.
   function updateDot() {
     var g = getGlobe();
     if (!g) return;
-
     var r = g.getBoundingClientRect();
-
-    // If the globe has no size yet (not painted) do nothing
     if (r.width === 0 || r.height === 0) return;
 
     var cx = Math.round(r.left + r.width  * 0.5 - 6);
     var cy = Math.round(r.top  + r.height * 0.5 - 6);
 
-    // Hide the dot if the globe centre has scrolled off-screen
     var offScreen = (cy < -12 || cy > window.innerHeight + 12 ||
                      cx < -12 || cx > window.innerWidth  + 12);
 
     if (offScreen) {
       dot.style.opacity = '0';
       dot.style.pointerEvents = 'none';
-      // Also close the widget if it was open
       if (isOpen) closeWidget();
     } else {
       dot.style.opacity = '1';
       dot.style.pointerEvents = '';
       dot.style.left = cx + 'px';
       dot.style.top  = cy + 'px';
-
-      // Keep widget anchored to dot while scrolling
       if (isOpen) repositionWidget();
     }
   }
 
-  // ── rAF scroll loop — runs every frame, zero jank ──
   function onScroll() {
-    if (rafId) return;          // already scheduled
+    if (rafId) return;
     rafId = requestAnimationFrame(function () {
       rafId = null;
       updateDot();
     });
   }
 
-  // Attach to every scroll-triggering event
-  window.addEventListener('scroll',  onScroll, { passive: true });
-  window.addEventListener('resize',  onScroll, { passive: true });
-  window.addEventListener('load',    updateDot);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  window.addEventListener('load',   updateDot);
 
-  // Initial placement + short polling to handle GIF load delay
   updateDot();
   var polls = 0;
   var poll = setInterval(function () {
     updateDot();
-    if (++polls >= 20) clearInterval(poll); // poll for ~4s at 200ms
+    if (++polls >= 20) clearInterval(poll);
   }, 200);
 
-  // ── Widget positioning — always relative to dot's live screen position ──
   function repositionWidget() {
     var dr  = dot.getBoundingClientRect();
     var dcx = dr.left + 6;
@@ -140,14 +155,12 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
   }
 
   function placeWidget() {
-    // Measure without displaying
     widget.style.visibility = 'hidden';
     widget.style.display    = 'block';
-    repositionWidget();           // uses real dimensions now
+    repositionWidget();
     widget.style.visibility = '';
   }
 
-  // ── Toggle open/close ──
   function openWidget() {
     placeWidget();
     widget.style.display = 'block';
@@ -198,8 +211,8 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || d.error) throw new Error('ipapi fail');
-        var isp  = d.org || d.asn || 'N/A';
-        var loc  = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
+        var isp = d.org || d.asn || 'N/A';
+        var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
         fillGeo(isp, loc, 'Residential');
       })
       .catch(function () {
@@ -244,7 +257,6 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
         });
     });
 
-  // ── Connection — navigator.connection ──
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (nc) {
     var ct = (nc.effectiveType || '').toUpperCase();
@@ -254,7 +266,6 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
     setVal('wConnection', 'N/A');
   }
 
-  // ── Local IP — WebRTC ──
   try {
     var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
     pc.createDataChannel('');

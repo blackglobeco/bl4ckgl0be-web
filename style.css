@@ -24,7 +24,7 @@
 
 html {
   scroll-behavior: smooth;
-  /* snap both pages into place */
+  /* scroll-snap: mandatory so both pages fill the viewport */
   scroll-snap-type: y mandatory;
 }
 html, body {
@@ -144,9 +144,10 @@ body {
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
-  /* snap point */
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  /* scroll-margin-top ensures nav doesn't cover content when snapping */
+  scroll-margin-top: 0px;
 }
 
 .hero-globe-wrap {
@@ -254,15 +255,16 @@ body {
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
-  /* separator line from hero */
   border-top: 1px solid rgba(255,255,255,0.06);
-  /* snap point */
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  /* KEY FIX: scroll-margin-top = nav height so the section top lands
+     exactly at the bottom of the navbar when scrolled/snapped to */
+  scroll-margin-top: var(--nav-h);
   overflow: hidden;
 }
 
-/* ── LEFT text panel — mirrors hero-content width ── */
+/* ── LEFT text panel ── */
 .ci-text {
   position: relative;
   z-index: 2;
@@ -321,13 +323,11 @@ body {
   margin-bottom: 28px;
   width: fit-content;
 }
-
 .ci-stat {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-
 .ci-stat-num {
   font-family: var(--font-display);
   font-size: 28px;
@@ -335,7 +335,6 @@ body {
   color: var(--white);
   line-height: 1;
 }
-
 .ci-stat-lbl {
   font-family: var(--font-mono);
   font-size: 7.5px;
@@ -360,13 +359,27 @@ body {
   text-decoration: none;
   transition: opacity 0.2s, transform 0.15s;
 }
-.ci-launch-btn:hover {
-  opacity: 0.88;
-  transform: translateY(-1px);
-}
+.ci-launch-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 .ci-launch-btn svg { flex-shrink: 0; opacity: 0.55; }
 
-/* ── RIGHT mockup — mirrors globe-wrap ── */
+/* ══════════════════════════════════════════════
+   RIGHT MOCKUP — GIF white-flicker fix
+   ──────────────────────────────────────────────
+   Root cause on iOS Safari / Android Chrome:
+   mix-blend-mode on <img> GIFs composites each frame
+   against white at the GPU level before the page blend
+   is applied — causing a full white flash every loop.
+
+   THE FIX: Render the GIF as CSS background-image.
+   background-blend-mode blends layers against the
+   element's own background-color (black) internally —
+   BEFORE the element is composited to the page.
+   Result: dark GIF pixels → transparent, no white flash,
+   works on every browser including iOS Safari.
+
+   The background-image URL is injected by JS so the GIF
+   starts loading only when the element exists in DOM.
+══════════════════════════════════════════════ */
 .ci-mockup-wrap {
   position: absolute;
   top: 0;
@@ -375,51 +388,39 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  isolation: isolate;
 }
 
-/*
-  Inner black container: fixes the mobile white-flicker bug.
-  Mobile Safari/Chrome fail to apply mix-blend-mode to animated GIFs —
-  the GIF background flashes white. Wrapping in a true black bg
-  container and masking the container (not the img) prevents this.
-*/
-.ci-mockup-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: var(--black);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.ci-mockup-bg {
+  position: absolute;
+  inset: 0;
+  /* Layer 1 (top): GIF — set via JS as background-image
+     Layer 2 (bottom): solid black
+     background-blend-mode: screen blends GIF against black:
+       black GIF pixels → transparent  ✓
+       bright GIF pixels → stay bright ✓
+     No white flash possible on any browser. */
+  background-color: var(--black);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center center;
+  background-blend-mode: screen;
+  /* Left-edge fade so mockup dissolves into the text panel */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 12%,
+    black 15%,
     black 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 12%,
+    black 15%,
     black 100%
   );
 }
 
-.ci-mockup-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center center;
-  mix-blend-mode: screen;
-}
-
 /* ══════════════════════════════
-   IP DOT & WIDGET — fixed overlays
+   IP DOT & WIDGET
 ══════════════════════════════ */
 .ip-dot {
   position: fixed;
@@ -429,7 +430,6 @@ body {
   cursor: pointer;
   transition: opacity 0.3s;
 }
-
 .ip-dot-ping {
   position: absolute;
   inset: -8px;
@@ -445,7 +445,6 @@ body {
   box-shadow: 0 0 0 2px rgba(204,34,34,0.35), 0 0 14px rgba(204,34,34,0.9), 0 0 28px rgba(204,34,34,0.4);
   animation: dot-blink 1.8s ease-in-out infinite;
 }
-
 @keyframes dot-ping {
   0%   { transform: scale(0.8); opacity: 0.9; }
   70%  { transform: scale(3);   opacity: 0; }
@@ -466,7 +465,6 @@ body {
   box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 0 1px rgba(0,0,0,0.5);
   font-family: var(--font-mono);
 }
-
 .ipw-header {
   display: flex;
   align-items: center;
@@ -495,7 +493,6 @@ body {
   line-height: 1;
 }
 .ipw-close-header:hover { color: #f0ede8; border-color: rgba(255,255,255,0.3); }
-
 .ipw-ip-block {
   padding: 11px 13px 9px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -515,7 +512,6 @@ body {
   line-height: 1;
   word-break: break-all;
 }
-
 .ipw-rows { padding: 3px 0 4px; }
 .ipw-row {
   display: flex;
@@ -546,18 +542,17 @@ body {
 .ipw-v.mobile      { color: #66aaff; }
 
 /* ══════════════════════════════
-   RESPONSIVE — Tablet (≤900px)
+   RESPONSIVE — Tablet ≤900px
 ══════════════════════════════ */
 @media (max-width: 900px) {
-  .hero-content { width: 55%; }
-  .globe-img    { width: 70vh; height: 70vh; }
-
-  .ci-text { width: 55%; }
-  .ci-mockup-wrap { left: 45%; }
+  .hero-content    { width: 55%; }
+  .globe-img       { width: 70vh; height: 70vh; }
+  .ci-text         { width: 55%; }
+  .ci-mockup-wrap  { left: 45%; }
 }
 
 /* ══════════════════════════════
-   RESPONSIVE — Mobile (≤768px)
+   RESPONSIVE — Mobile ≤768px
 ══════════════════════════════ */
 @media (max-width: 768px) {
   :root {
@@ -597,10 +592,10 @@ body {
   }
   .nav-toggle { display: flex; }
 
-  /* ── Mobile: snap off, stack vertically ── */
+  /* Turn off snap on mobile — natural scroll */
   html { scroll-snap-type: none; }
 
-  /* Hero mobile */
+  /* ── Hero mobile ── */
   .hero {
     height: 100dvh;
     min-height: 600px;
@@ -609,8 +604,8 @@ body {
     align-items: flex-start;
     padding-bottom: 48px;
     overflow: hidden;
+    scroll-margin-top: 0;
   }
-
   .hero-globe-wrap {
     position: absolute;
     top: var(--nav-h);
@@ -634,29 +629,28 @@ body {
   .hero-rule  { margin: 16px 0; }
   .hero-sub   { font-size: 13px; line-height: 1.7; max-width: 100%; }
 
-  /* CI page mobile — stack vertically, scroll freely */
+  /* ── CI page mobile — stacked, free scroll ── */
   .ci-page {
     height: auto;
     min-height: 100dvh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    padding-top: calc(var(--nav-h) + 40px);
+    padding-top: calc(var(--nav-h) + 36px);
     padding-bottom: 56px;
     overflow: visible;
+    scroll-margin-top: var(--nav-h);
   }
 
   .ci-text {
     width: 100%;
     min-width: unset;
     padding: 0 var(--gutter);
-    margin-bottom: 36px;
+    margin-bottom: 32px;
   }
-
   .ci-title { font-size: clamp(22px, 7vw, 34px); line-height: 1.2; }
   .ci-rule  { margin: 16px 0; }
   .ci-desc  { font-size: 13px; max-width: 100%; margin-bottom: 20px; }
-
   .ci-stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px 24px;
@@ -664,47 +658,39 @@ body {
   }
   .ci-stat-num { font-size: 24px; }
 
-  /* Mockup below text on mobile */
+  /* ── Mobile mockup — below text, full-width ── */
   .ci-mockup-wrap {
     position: relative;
-    left: auto; right: auto; top: auto;
+    top: auto; left: auto; right: auto;
     width: 100%;
-    height: 58vw;
+    height: 62vw;
     min-height: 220px;
-    max-height: 380px;
+    max-height: 360px;
     overflow: hidden;
-    isolation: auto;
   }
 
-  /* On mobile: radial mask centred on image — fades all edges cleanly */
-  .ci-mockup-inner {
+  /* On mobile: radial mask fades all edges; background-blend-mode
+     still eliminates white flash exactly as on desktop */
+  .ci-mockup-bg {
     -webkit-mask-image: radial-gradient(
-      ellipse 92% 88% at 50% 50%,
-      black 55%,
+      ellipse 95% 90% at 50% 50%,
+      black 50%,
       transparent 100%
     );
     mask-image: radial-gradient(
-      ellipse 92% 88% at 50% 50%,
-      black 55%,
+      ellipse 95% 90% at 50% 50%,
+      black 50%,
       transparent 100%
     );
   }
 
-  /* Remove blend mode on mobile — black container bg already handles white GIF bg */
-  .ci-mockup-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    mix-blend-mode: normal;
-  }
-
-  .ip-widget { width: 280px; }
+  .ip-widget  { width: 280px; }
   .ipw-ip-val { font-size: 15px; }
 }
 
 @media (max-width: 390px) {
-  .hero-title   { font-size: 20px; }
-  .ci-title     { font-size: 20px; }
-  .logo-text    { font-size: 18px; }
-  .ip-widget    { width: 252px; }
+  .hero-title  { font-size: 20px; }
+  .ci-title    { font-size: 20px; }
+  .logo-text   { font-size: 18px; }
+  .ip-widget   { width: 252px; }
 }

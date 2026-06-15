@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=29" />
+  <link rel="stylesheet" href="style.css?v=30" />
 </head>
 <body>
 
@@ -90,16 +90,14 @@
       </a>
     </div>
 
-    <!-- RIGHT — mockup -->
+    <!-- RIGHT — mockup
+         The GIF is loaded as a CSS background-image via JS (see style.css).
+         This avoids mix-blend-mode on <img> which flickers white on iOS Safari.
+         The .ci-mockup-bg div is the rendering surface; JS sets its background-image
+         to url(cyberint_superhd.gif) after the element is ready.
+    -->
     <div class="ci-mockup-wrap">
-      <div class="ci-mockup-inner">
-        <img
-          src="cyberint_superhd.gif"
-          alt="Black Globe Cyber Intelligence Platform — laptop and mobile preview"
-          class="ci-mockup-img"
-          loading="lazy"
-        />
-      </div>
+      <div class="ci-mockup-bg" id="ciMockupBg"></div>
     </div>
 
   </section>
@@ -131,6 +129,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=32"></script>
+  <script src="main.js?v=33"></script>
 </body>
 </html>
