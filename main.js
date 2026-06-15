@@ -60,7 +60,7 @@ document.addEventListener('click', (e) => {
     placeDot(); if (++polls > 15) clearInterval(poll);
   }, 200);
 
-  // ── Position widget LEFT of dot (globe is on the right) ──
+  // ── Position widget LEFT of dot ──
   function placeWidget() {
     widget.style.visibility = 'hidden';
     widget.style.display    = 'block';
@@ -69,22 +69,19 @@ document.addEventListener('click', (e) => {
     widget.style.display    = 'none';
     widget.style.visibility = '';
     var dr   = dot.getBoundingClientRect();
-    var dcx  = dr.left + 6;
-    var dcy  = dr.top  + 6;
-    var vw   = window.innerWidth;
-    var vh   = window.innerHeight;
-    var pad  = 16;
-    var navH = 72;
-    var left = dcx - ww - 32;   // open LEFT of dot
-    var top  = dcy - wh / 2;    // vertically centred on dot
-    if (left < pad) left = dcx + 32;  // flip right only on narrow screens
+    var dcx  = dr.left + 6, dcy = dr.top + 6;
+    var vw   = window.innerWidth, vh = window.innerHeight;
+    var pad  = 16, navH = 72;
+    var left = dcx - ww - 32;
+    var top  = dcy - wh / 2;
+    if (left < pad) left = dcx + 32;
     top  = Math.max(navH + pad, Math.min(vh - wh - pad, top));
     left = Math.max(pad, Math.min(vw - ww - pad, left));
     widget.style.top  = Math.round(top)  + 'px';
     widget.style.left = Math.round(left) + 'px';
   }
 
-  // ── Toggle open / close ──
+  // ── Toggle ──
   var isOpen = false, justOpened = false;
   function openWidget() {
     placeWidget();
@@ -113,41 +110,53 @@ document.addEventListener('click', (e) => {
     el.textContent = text || 'N/A';
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
+
   function populate(ip, isp, location, ipType) {
     document.getElementById('wIpAddr').textContent = ip;
     var cls = 'residential';
-    if (/proxy|vpn/i.test(ipType))         cls = 'proxy';
-    else if (/hosting|dc/i.test(ipType))   cls = 'hosting';
-    else if (/mobile/i.test(ipType))       cls = 'mobile';
-    setVal('wIpType',   ipType,    cls);
+    if (/proxy|vpn/i.test(ipType))       cls = 'proxy';
+    else if (/hosting|dc/i.test(ipType)) cls = 'hosting';
+    else if (/mobile/i.test(ipType))     cls = 'mobile';
+    setVal('wIpType',   ipType, cls);
     setVal('wHostname', 'N/A');
     setVal('wIsp',      isp);
     setVal('wLocation', location);
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
-  // ── Triple HTTPS fallback chain ──
-  // 1. ipwho.is   — HTTPS, no key, CORS, returns ip/isp/city/region/country
-  // 2. ipapi.co   — HTTPS, no key, CORS, returns ip/org/city/region/country
-  // 3. freeipapi  — HTTPS, no key, CORS, returns ipAddress/ispName/cityName etc.
+  // ── Data sources ──
+  // PRIMARY: /api/ip — our own Vercel Edge Function
+  // Reads Cf-Connecting-Ip header server-side — EXACT same source as c99.nl
+  // Always returns the real IPv4, ISP via ASN, city/region/country from Cloudflare
+  function tryOwnApi() {
+    return fetch('/api/ip')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ip || d.ip === 'unknown') throw new Error('own api fail');
+        var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
+        populate(d.ip, d.asn ? 'ASN ' + d.asn : 'N/A', loc || 'N/A', 'Residential');
+      });
+  }
 
+  // FALLBACK 1: ipwho.is
   function tryIpwho() {
     return fetch('https://ipwho.is/')
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d.success || !d.ip) throw new Error('ipwho fail');
-        var isp = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A');
-        var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
+        var isp  = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A');
+        var loc  = [d.city, d.region, d.country].filter(Boolean).join(', ');
         var type = 'Residential';
         if (d.connection) {
           var org = (d.connection.org || '').toLowerCase();
-          if (/vpn|proxy/i.test(org))                        type = 'Proxy / VPN';
+          if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
           else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
         }
         populate(d.ip, isp, loc || 'N/A', type);
       });
   }
 
+  // FALLBACK 2: ipapi.co
   function tryIpapi() {
     return fetch('https://ipapi.co/json/')
       .then(function (r) { return r.json(); })
@@ -158,6 +167,7 @@ document.addEventListener('click', (e) => {
       });
   }
 
+  // FALLBACK 3: freeipapi.com
   function tryFreeipapi() {
     return fetch('https://freeipapi.com/api/json')
       .then(function (r) { return r.json(); })
@@ -168,7 +178,8 @@ document.addEventListener('click', (e) => {
       });
   }
 
-  tryIpwho()
+  tryOwnApi()
+    .catch(function () { return tryIpwho(); })
     .catch(function () { return tryIpapi(); })
     .catch(function () { return tryFreeipapi(); })
     .catch(function () {
