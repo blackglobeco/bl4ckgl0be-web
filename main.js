@@ -116,21 +116,21 @@ document.addEventListener('click', (e) => {
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
-  // Geo lookup for a specific IP — ordered by accuracy + reliability
-  // 1. freeipapi.com  — no key, HTTPS, CORS, city+region+country+ISP, unlimited
-  // 2. ipwho.is       — no key, HTTPS, CORS, full geo data
+  // Geo lookup for a specific IP
+  // PRIMARY: ipapi.co — matches Cloudflare geo data (same source as c99.nl)
+  // FALLBACK: ipwho.is — if ipapi.co fails
   function geoForIP(ip) {
-    return fetch('https://freeipapi.com/api/json/' + ip)
+    return fetch('https://ipapi.co/' + ip + '/json/')
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d || !d.ipAddress) throw new Error('freeipapi fail');
-        var isp  = d.ispName || 'N/A';
-        var loc  = [d.cityName, d.regionName, d.countryName].filter(Boolean).join(', ');
+        if (!d || d.error) throw new Error('ipapi fail');
+        var isp  = d.org || d.asn || 'N/A';
+        var loc  = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
         var type = 'Residential';
         fillGeo(isp, loc, type);
       })
       .catch(function () {
-        // Fallback: ipwho.is
+        // Fallback to ipwho.is
         return fetch('https://ipwho.is/' + ip)
           .then(function (r) { return r.json(); })
           .then(function (g) {
