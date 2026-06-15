@@ -50,60 +50,123 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
   var closeBtn = document.getElementById('ipWidgetClose');
   if (!dot || !widget) return;
 
-  // ── Position dot over globe centre ──
-  function placeDot() {
-    var g = document.querySelector('.globe-img');
-    if (!g) return;
-    var r = g.getBoundingClientRect();
-    if (r.width === 0) return;
-    dot.style.left = Math.round(r.left + r.width  * 0.5 - 6) + 'px';
-    dot.style.top  = Math.round(r.top  + r.height * 0.5 - 6) + 'px';
+  var globeEl  = null;   // cached reference, resolved after load
+  var rafId    = null;   // requestAnimationFrame handle
+  var isOpen   = false;
+  var justOpened = false;
+
+  // ── Resolve globe element (may not exist at script parse time) ──
+  function getGlobe() {
+    if (!globeEl) globeEl = document.querySelector('.globe-img');
+    return globeEl;
   }
-  placeDot();
-  window.addEventListener('load', placeDot);
-  window.addEventListener('resize', placeDot);
+
+  // ── Core: read globe's CURRENT viewport rect and pin dot to its centre ──
+  // getBoundingClientRect() always returns live viewport-relative coords,
+  // which map 1:1 to position:fixed top/left — no scroll offset needed.
+  function updateDot() {
+    var g = getGlobe();
+    if (!g) return;
+
+    var r = g.getBoundingClientRect();
+
+    // If the globe has no size yet (not painted) do nothing
+    if (r.width === 0 || r.height === 0) return;
+
+    var cx = Math.round(r.left + r.width  * 0.5 - 6);
+    var cy = Math.round(r.top  + r.height * 0.5 - 6);
+
+    // Hide the dot if the globe centre has scrolled off-screen
+    var offScreen = (cy < -12 || cy > window.innerHeight + 12 ||
+                     cx < -12 || cx > window.innerWidth  + 12);
+
+    if (offScreen) {
+      dot.style.opacity = '0';
+      dot.style.pointerEvents = 'none';
+      // Also close the widget if it was open
+      if (isOpen) closeWidget();
+    } else {
+      dot.style.opacity = '1';
+      dot.style.pointerEvents = '';
+      dot.style.left = cx + 'px';
+      dot.style.top  = cy + 'px';
+
+      // Keep widget anchored to dot while scrolling
+      if (isOpen) repositionWidget();
+    }
+  }
+
+  // ── rAF scroll loop — runs every frame, zero jank ──
+  function onScroll() {
+    if (rafId) return;          // already scheduled
+    rafId = requestAnimationFrame(function () {
+      rafId = null;
+      updateDot();
+    });
+  }
+
+  // Attach to every scroll-triggering event
+  window.addEventListener('scroll',  onScroll, { passive: true });
+  window.addEventListener('resize',  onScroll, { passive: true });
+  window.addEventListener('load',    updateDot);
+
+  // Initial placement + short polling to handle GIF load delay
+  updateDot();
   var polls = 0;
   var poll = setInterval(function () {
-    placeDot(); if (++polls > 15) clearInterval(poll);
+    updateDot();
+    if (++polls >= 20) clearInterval(poll); // poll for ~4s at 200ms
   }, 200);
 
-  // ── Position widget LEFT of dot ──
-  function placeWidget() {
-    widget.style.visibility = 'hidden';
-    widget.style.display    = 'block';
-    var ww = widget.offsetWidth  || 320;
-    var wh = widget.offsetHeight || 320;
-    widget.style.display    = 'none';
-    widget.style.visibility = '';
-    var dr   = dot.getBoundingClientRect();
-    var dcx  = dr.left + 6, dcy = dr.top + 6;
-    var vw   = window.innerWidth, vh = window.innerHeight;
-    var pad  = 16, navH = 72;
+  // ── Widget positioning — always relative to dot's live screen position ──
+  function repositionWidget() {
+    var dr  = dot.getBoundingClientRect();
+    var dcx = dr.left + 6;
+    var dcy = dr.top  + 6;
+    var vw  = window.innerWidth;
+    var vh  = window.innerHeight;
+    var ww  = widget.offsetWidth  || 320;
+    var wh  = widget.offsetHeight || 320;
+    var pad = 16, navH = 72;
+
     var left = dcx - ww - 32;
     var top  = dcy - wh / 2;
     if (left < pad) left = dcx + 32;
     top  = Math.max(navH + pad, Math.min(vh - wh - pad, top));
-    left = Math.max(pad, Math.min(vw - ww - pad, left));
+    left = Math.max(pad,        Math.min(vw - ww - pad, left));
+
     widget.style.top  = Math.round(top)  + 'px';
     widget.style.left = Math.round(left) + 'px';
   }
 
-  // ── Toggle ──
-  var isOpen = false, justOpened = false;
+  function placeWidget() {
+    // Measure without displaying
+    widget.style.visibility = 'hidden';
+    widget.style.display    = 'block';
+    repositionWidget();           // uses real dimensions now
+    widget.style.visibility = '';
+  }
+
+  // ── Toggle open/close ──
   function openWidget() {
     placeWidget();
     widget.style.display = 'block';
-    isOpen = true; justOpened = true;
+    isOpen = true;
+    justOpened = true;
     setTimeout(function () { justOpened = false; }, 0);
   }
-  function closeWidget() { widget.style.display = 'none'; isOpen = false; }
+  function closeWidget() {
+    widget.style.display = 'none';
+    isOpen = false;
+  }
 
   dot.addEventListener('click', function (e) {
     e.stopPropagation();
     isOpen ? closeWidget() : openWidget();
   });
   if (closeBtn) closeBtn.addEventListener('click', function (e) {
-    e.stopPropagation(); closeWidget();
+    e.stopPropagation();
+    closeWidget();
   });
   document.addEventListener('click', function (e) {
     if (justOpened || !isOpen) return;
@@ -137,8 +200,7 @@ document.querySelectorAll('a.nav-scroll').forEach(link => {
         if (!d || d.error) throw new Error('ipapi fail');
         var isp  = d.org || d.asn || 'N/A';
         var loc  = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
-        var type = 'Residential';
-        fillGeo(isp, loc, type);
+        fillGeo(isp, loc, 'Residential');
       })
       .catch(function () {
         return fetch('https://ipwho.is/' + ip)
