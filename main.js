@@ -104,55 +104,66 @@ document.addEventListener('click', (e) => {
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
 
-  // ── STEP 1: Get guaranteed IPv4 from ipv4.icanhazip.com ──
-  // ── STEP 2: Pass that IPv4 directly to ipwho.is/{ip} for geo ──
-  // Both steps use the SAME IPv4 — geo data always matches the displayed IP.
+  function fillGeo(isp, location, ipType) {
+    var cls = 'residential';
+    if (/proxy|vpn/i.test(ipType))       cls = 'proxy';
+    else if (/hosting|dc/i.test(ipType)) cls = 'hosting';
+    else if (/mobile/i.test(ipType))     cls = 'mobile';
+    setVal('wIpType',   ipType, cls);
+    setVal('wHostname', 'N/A');
+    setVal('wIsp',      isp || 'N/A');
+    setVal('wLocation', location || 'N/A');
+    setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+  }
+
+  // Geo lookup for a specific IP — try ipwho.is first, then ipapi.co
+  function geoForIP(ip) {
+    return fetch('https://ipwho.is/' + ip)
+      .then(function (r) { return r.json(); })
+      .then(function (g) {
+        if (!g || !g.success) throw new Error('ipwho fail');
+        var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
+        var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
+        var type = 'Residential';
+        if (g.connection) {
+          var org = (g.connection.org || '').toLowerCase();
+          if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
+          else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
+        }
+        fillGeo(isp, loc, type);
+      })
+      .catch(function () {
+        // ipwho.is failed — fallback to ipapi.co with the same IP
+        return fetch('https://ipapi.co/' + ip + '/json/')
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d || d.error) throw new Error('ipapi fail');
+            var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
+            fillGeo(d.org || d.asn || 'N/A', loc, 'Residential');
+          });
+      });
+  }
+
+  // ── STEP 1: ipv4.icanhazip.com — Cloudflare-owned, returns plain text IPv4 ──
+  // ── STEP 2: pass that IPv4 to geo lookup ──
   fetch('https://ipv4.icanhazip.com')
     .then(function (r) { return r.text(); })
     .then(function (t) {
       var ipv4 = t.trim();
       if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) throw new Error('not ipv4');
-
-      // Show IP immediately
       document.getElementById('wIpAddr').textContent = ipv4;
-
-      // Now fetch geo for THIS specific IPv4
-      return fetch('https://ipwho.is/' + ipv4)
-        .then(function (r) { return r.json(); })
-        .then(function (g) {
-          if (!g.success) throw new Error('geo fail');
-
-          var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
-          var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
-
-          var ipType = 'Residential', cls = 'residential';
-          if (g.connection) {
-            var org = (g.connection.org || '').toLowerCase();
-            if (/vpn|proxy/i.test(org))                            { ipType = 'Proxy / VPN';  cls = 'proxy'; }
-            else if (/hosting|cloud|data.?cent|server/i.test(org)) { ipType = 'Hosting / DC'; cls = 'hosting'; }
-          }
-
-          setVal('wIpType',   ipType, cls);
-          setVal('wHostname', 'N/A');
-          setVal('wIsp',      isp);
-          setVal('wLocation', loc || 'N/A');
-          setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
-        });
+      return geoForIP(ipv4);
     })
     .catch(function () {
-      // Full fallback: ipwho.is auto (may show IPv6 but has all data)
-      fetch('https://ipwho.is/')
+      // icanhazip failed — try ipwho.is auto-detect as full fallback
+      return fetch('https://ipwho.is/')
         .then(function (r) { return r.json(); })
         .then(function (g) {
-          if (!g.success || !g.ip) throw new Error('fail');
+          if (!g || !g.success || !g.ip) throw new Error('fail');
           document.getElementById('wIpAddr').textContent = g.ip;
           var isp = (g.connection && g.connection.isp) ? g.connection.isp : 'N/A';
           var loc = [g.city, g.region, g.country].filter(Boolean).join(', ');
-          setVal('wIpType',   'Residential', 'residential');
-          setVal('wHostname', 'N/A');
-          setVal('wIsp',      isp);
-          setVal('wLocation', loc || 'N/A');
-          setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+          fillGeo(isp, loc, 'Residential');
         })
         .catch(function () {
           document.getElementById('wIpAddr').textContent = 'Unavailable';
