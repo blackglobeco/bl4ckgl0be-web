@@ -312,22 +312,22 @@ body {
     top: var(--nav-h);
     left: 0;
     right: 0;
-    height: 55%;
+    height: 62%;
     overflow: visible;
   }
   .globe-img {
-    width: 100vw;
-    height: 100vw;
-    max-width: 480px;
-    opacity: 0.30;
+    width: 95vw;
+    height: 95vw;
+    max-width: 520px;
+    opacity: 0.75;
     -webkit-mask-image: radial-gradient(
-      ellipse 70% 70% at 50% 40%,
-      black 40%,
+      ellipse 80% 80% at 50% 45%,
+      black 55%,
       transparent 100%
     );
     mask-image: radial-gradient(
-      ellipse 70% 70% at 50% 40%,
-      black 40%,
+      ellipse 80% 80% at 50% 45%,
+      black 55%,
       transparent 100%
     );
   }
