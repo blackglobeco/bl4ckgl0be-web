@@ -438,17 +438,20 @@ body {
   text-transform: uppercase;
   color: #cc2222;
 }
-.ipw-link {
+.ipw-close-header {
   margin-left: auto;
-  font-size: 7.5px;
-  letter-spacing: 0.1em;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
   color: #666;
-  text-decoration: none;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: color 0.15s;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1;
 }
-.ipw-link:hover { color: #f0ede8; }
+.ipw-close-header:hover { color: #f0ede8; border-color: rgba(255,255,255,0.3); }
 
 .ipw-ip-block {
   padding: 11px 13px 9px;
@@ -499,23 +502,7 @@ body {
 .ipw-v.hosting     { color: #ffaa22; }
 .ipw-v.mobile      { color: #66aaff; }
 
-.ipw-footer {
-  padding: 8px 13px;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  text-align: right;
-}
-.ipw-close {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #666;
-  font-family: var(--font-mono);
-  font-size: 8px;
-  letter-spacing: 0.14em;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-.ipw-close:hover { color: #f0ede8; border-color: rgba(255,255,255,0.3); }
+
 
 @media (max-width: 768px) {
   .ip-widget { width: 280px; }
