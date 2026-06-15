@@ -378,44 +378,44 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  isolation: isolate;
 }
 
-.ci-mockup-glow {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 70% 70% at 55% 50%,
-    rgba(204, 34, 34, 0.10) 0%,
-    rgba(80, 0, 0, 0.04) 50%,
-    transparent 75%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-.ci-mockup-img {
+/*
+  Inner black container: fixes the mobile white-flicker bug.
+  Mobile Safari/Chrome fail to apply mix-blend-mode to animated GIFs —
+  the GIF background flashes white. Wrapping in a true black bg
+  container and masking the container (not the img) prevents this.
+*/
+.ci-mockup-inner {
   position: relative;
-  z-index: 1;
-  /* fill the right panel the same way the globe does */
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center center;
-  /* blend against black background so GIF edges disappear */
-  mix-blend-mode: screen;
-  /* subtle fade on the left edge to blend into text area */
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 14%,
+    black 12%,
     black 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 14%,
+    black 12%,
     black 100%
   );
+}
+
+.ci-mockup-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  mix-blend-mode: screen;
 }
 
 /* ══════════════════════════════
@@ -669,18 +669,33 @@ body {
     position: relative;
     left: auto; right: auto; top: auto;
     width: 100%;
-    height: 55vw;
-    min-height: 240px;
-    max-height: 400px;
+    height: 58vw;
+    min-height: 220px;
+    max-height: 380px;
     overflow: hidden;
+    isolation: auto;
   }
 
+  /* On mobile: radial mask centred on image — fades all edges cleanly */
+  .ci-mockup-inner {
+    -webkit-mask-image: radial-gradient(
+      ellipse 92% 88% at 50% 50%,
+      black 55%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 92% 88% at 50% 50%,
+      black 55%,
+      transparent 100%
+    );
+  }
+
+  /* Remove blend mode on mobile — black container bg already handles white GIF bg */
   .ci-mockup-img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    -webkit-mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
-    mask-image:         radial-gradient(ellipse 90% 90% at 50% 50%, black 60%, transparent 100%);
+    mix-blend-mode: normal;
   }
 
   .ip-widget { width: 280px; }
