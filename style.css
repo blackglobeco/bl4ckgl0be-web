@@ -403,11 +403,11 @@ body {
   );
 }
 
-/* ── Video mockup ──
-   No mix-blend-mode needed — the video's own dark background blends
-   naturally with the page. background-color: #080808 matches --black
-   so any letterbox area is invisible. object-fit: cover fills
-   edge-to-edge with no bars visible on mobile or desktop. */
+/* ── Video mockup — replaces GIF background-image trick ──
+   <video autoplay muted loop playsinline> is hardware-decoded
+   by the mobile GPU and has zero flicker/compositing issues.
+   mix-blend-mode: screen works correctly on video elements
+   (unlike animated GIFs) on both iOS Safari and Android Chrome. */
 .ci-mockup-video {
   position: absolute;
   top: 50%;
@@ -415,8 +415,8 @@ body {
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  background-color: #080808;
+  object-fit: contain;
+  mix-blend-mode: screen;
 }
 
 /* ══════════════════════════════
@@ -636,10 +636,10 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    /* padding-top: 0 — scroll-margin-top already offsets the nav.
-       All top spacing comes from ci-text margin-top (36px) so the
-       text appears exactly 36px below the navbar edge, no blank gap. */
-    padding-top: 0;
+    /* padding-top = nav height only; scroll-margin-top handles the nav offset.
+       The extra 36px spacing is moved to ci-text margin-top below so it shows
+       below the nav instead of creating a gap above visible content. */
+    padding-top: var(--nav-h);
     padding-bottom: 56px;
     overflow: visible;
     scroll-margin-top: var(--nav-h);
@@ -649,7 +649,7 @@ body {
     width: 100%;
     min-width: unset;
     padding: 0 var(--gutter);
-    margin-top: calc(var(--nav-h) + 36px);
+    margin-top: 36px;
     margin-bottom: 32px;
   }
   .ci-title { font-size: clamp(22px, 7vw, 34px); line-height: 1.2; }
