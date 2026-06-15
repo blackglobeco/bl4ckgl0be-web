@@ -117,67 +117,50 @@ document.addEventListener('click', (e) => {
   }
 
   // ── Data strategy ──
-  // PRIMARY:   ipapi.is — 1,000 req/day free, HTTPS, CORS, hosting/VPN/proxy detection built-in
-  // FALLBACK1: ipwho.is — reliable, HTTPS, CORS, full geo data
-  // FALLBACK2: freeipapi.com — unlimited, HTTPS, CORS
+  // ipwho.is  → IP address, ISP, IP Type (primary source for everything)
+  // ipapi.is  → Location only (city/state/country — more accurate database)
+  // Both run in parallel for speed. ipapi.is location overwrites ipwho.is location if successful.
 
-  function tryIpapiIs() {
-    return fetch('https://api.ipapi.is/?q=')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || !d.ip) throw new Error('fail');
-        var isp  = (d.as && d.as.org)         ? d.as.org
-                 : (d.company && d.company.name) ? d.company.name
-                 : 'N/A';
-        var loc  = d.location
-                 ? [d.location.city, d.location.state, d.location.country].filter(Boolean).join(', ')
-                 : 'N/A';
-        var type = 'Residential';
-        if (d.is_datacenter)             type = 'Hosting / DC';
-        else if (d.is_proxy || d.is_vpn) type = 'Proxy / VPN';
-        else if (d.is_mobile)            type = 'Mobile';
-        // If IPv6, silently try to get IPv4 for display
-        if (d.ip.indexOf(':') !== -1) {
-          fetch('https://ipv4.icanhazip.com')
-            .then(function (r) { return r.text(); })
-            .then(function (t) {
-              var v4 = t.trim();
-              if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4))
-                document.getElementById('wIpAddr').textContent = v4;
-            }).catch(function(){});
-        }
-        fillGeo(d.ip, isp, loc, type);
-      });
-  }
+  fetch('https://ipwho.is/')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d || !d.success || !d.ip) throw new Error('ipwho fail');
 
-  function tryIpwho() {
-    return fetch('https://ipwho.is/')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || !d.success || !d.ip) throw new Error('fail');
-        var isp  = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A');
-        var loc  = [d.city, d.region, d.country].filter(Boolean).join(', ');
-        var type = 'Residential';
-        if (d.connection) {
-          var org = (d.connection.org || '').toLowerCase();
-          if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
-          else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
-        }
-        if (d.ip.indexOf(':') !== -1) {
-          fetch('https://ipv4.icanhazip.com')
-            .then(function (r) { return r.text(); })
-            .then(function (t) {
-              var v4 = t.trim();
-              if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4))
-                document.getElementById('wIpAddr').textContent = v4;
-            }).catch(function(){});
-        }
-        fillGeo(d.ip, isp, loc, type);
-      });
-  }
+      var ip   = d.ip;
+      var isp  = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A');
+      var loc  = [d.city, d.region, d.country].filter(Boolean).join(', ');
+      var type = 'Residential';
+      if (d.connection) {
+        var org = (d.connection.org || '').toLowerCase();
+        if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
+        else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
+      }
 
-  tryIpapiIs()
-    .catch(function () { return tryIpwho(); })
+      // Show ipwho.is data immediately
+      fillGeo(ip, isp, loc, type);
+
+      // If IPv6, silently try to upgrade IP display to IPv4
+      if (ip.indexOf(':') !== -1) {
+        fetch('https://ipv4.icanhazip.com')
+          .then(function (r) { return r.text(); })
+          .then(function (t) {
+            var v4 = t.trim();
+            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4))
+              document.getElementById('wIpAddr').textContent = v4;
+          }).catch(function () {});
+      }
+
+      // Fetch better location from ipapi.is in parallel — overwrite only location field
+      fetch('https://api.ipapi.is/?q=' + ip)
+        .then(function (r) { return r.json(); })
+        .then(function (a) {
+          if (!a || !a.location) return;
+          var betterLoc = [a.location.city, a.location.state, a.location.country]
+                            .filter(Boolean).join(', ');
+          if (betterLoc) setVal('wLocation', betterLoc);
+        })
+        .catch(function () {}); // silently ignore — ipwho.is location already shown
+    })
     .catch(function () {
       document.getElementById('wIpAddr').textContent = 'Unavailable';
       setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
