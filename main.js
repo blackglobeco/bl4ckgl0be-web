@@ -104,55 +104,61 @@ document.addEventListener('click', (e) => {
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
 
-  function isIPv6(ip) { return ip && ip.indexOf(':') !== -1; }
+  // ── STEP 1: Get guaranteed IPv4 from ipv4.icanhazip.com ──
+  // ── STEP 2: Pass that IPv4 directly to ipwho.is/{ip} for geo ──
+  // Both steps use the SAME IPv4 — geo data always matches the displayed IP.
+  fetch('https://ipv4.icanhazip.com')
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var ipv4 = t.trim();
+      if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) throw new Error('not ipv4');
 
-  // ── Fetch all data in parallel ──
-  // ipwho.is/  — gets whatever IP the browser uses (may be IPv6)
-  // ipwho.is/  with forced IPv4 URL — we pass the IP from the first call
-  //             but reversed: get IPv4 from a numeric-only URL trick
+      // Show IP immediately
+      document.getElementById('wIpAddr').textContent = ipv4;
 
-  // Strategy: fetch ipwho.is (gets geo + ISP + current IP)
-  // Then separately fetch icanhazip.com/4 which is strictly IPv4-only via path
-  Promise.allSettled([
-    fetch('https://ipwho.is/').then(function(r){ return r.json(); }),
-    fetch('https://ipv4.icanhazip.com').then(function(r){ return r.text(); })
-  ]).then(function(results) {
+      // Now fetch geo for THIS specific IPv4
+      return fetch('https://ipwho.is/' + ipv4)
+        .then(function (r) { return r.json(); })
+        .then(function (g) {
+          if (!g.success) throw new Error('geo fail');
 
-    var geo   = results[0].status === 'fulfilled' ? results[0].value : null;
-    var ipv4  = results[1].status === 'fulfilled' ? results[1].value.trim() : null;
+          var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
+          var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
 
-    // Validate IPv4 result
-    if (ipv4 && !/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) ipv4 = null;
+          var ipType = 'Residential', cls = 'residential';
+          if (g.connection) {
+            var org = (g.connection.org || '').toLowerCase();
+            if (/vpn|proxy/i.test(org))                            { ipType = 'Proxy / VPN';  cls = 'proxy'; }
+            else if (/hosting|cloud|data.?cent|server/i.test(org)) { ipType = 'Hosting / DC'; cls = 'hosting'; }
+          }
 
-    // Display: prefer IPv4 if we got it, else show whatever ipwho.is returns
-    var displayIP = ipv4 || (geo && geo.ip) || 'Unavailable';
-    document.getElementById('wIpAddr').textContent = displayIP;
-
-    // IP type
-    var ipType = 'Residential', cls = 'residential';
-    if (geo && geo.connection) {
-      var org = (geo.connection.org || '').toLowerCase();
-      if (/vpn|proxy/i.test(org))                            { ipType = 'Proxy / VPN';   cls = 'proxy'; }
-      else if (/hosting|cloud|data.?cent|server/i.test(org)) { ipType = 'Hosting / DC';  cls = 'hosting'; }
-    }
-    // If still showing IPv6, label it
-    if (isIPv6(displayIP)) { ipType = 'IPv6 / Residential'; }
-    setVal('wIpType', ipType, cls);
-    setVal('wHostname', 'N/A');
-
-    // ISP and Location from ipwho.is geo
-    if (geo && geo.success) {
-      var isp = (geo.connection && geo.connection.isp) ? geo.connection.isp : (geo.org || 'N/A');
-      var loc = [geo.city, geo.region, geo.country].filter(Boolean).join(', ');
-      setVal('wIsp',      isp);
-      setVal('wLocation', loc || 'N/A');
-    } else {
-      setVal('wIsp',      'N/A');
-      setVal('wLocation', 'N/A');
-    }
-
-    setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
-  });
+          setVal('wIpType',   ipType, cls);
+          setVal('wHostname', 'N/A');
+          setVal('wIsp',      isp);
+          setVal('wLocation', loc || 'N/A');
+          setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+        });
+    })
+    .catch(function () {
+      // Full fallback: ipwho.is auto (may show IPv6 but has all data)
+      fetch('https://ipwho.is/')
+        .then(function (r) { return r.json(); })
+        .then(function (g) {
+          if (!g.success || !g.ip) throw new Error('fail');
+          document.getElementById('wIpAddr').textContent = g.ip;
+          var isp = (g.connection && g.connection.isp) ? g.connection.isp : 'N/A';
+          var loc = [g.city, g.region, g.country].filter(Boolean).join(', ');
+          setVal('wIpType',   'Residential', 'residential');
+          setVal('wHostname', 'N/A');
+          setVal('wIsp',      isp);
+          setVal('wLocation', loc || 'N/A');
+          setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+        })
+        .catch(function () {
+          document.getElementById('wIpAddr').textContent = 'Unavailable';
+          setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+        });
+    });
 
   // ── Connection — navigator.connection (same as c99.nl) ──
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
