@@ -218,58 +218,69 @@ document.addEventListener('click', (e) => {
 // ── IP Widget — fixed overlay ──────────────
 (function () {
 
-  var dot    = document.getElementById('ipDot');
-  var widget = document.getElementById('ipWidget');
+  var dot      = document.getElementById('ipDot');
+  var widget   = document.getElementById('ipWidget');
   var closeBtn = document.getElementById('ipWidgetClose');
   if (!dot || !widget) return;
 
-  // ── Position the dot over the globe centre ──
+  // ── Position dot over globe centre ──
   function placeDot() {
-    var globeImg = document.querySelector('.globe-img');
-    if (!globeImg) return;
-    var r = globeImg.getBoundingClientRect();
-    var cx = r.left + r.width  * 0.5;
-    var cy = r.top  + r.height * 0.5;
-    dot.style.left = (cx - 6) + 'px';
-    dot.style.top  = (cy - 6) + 'px';
+    var g = document.querySelector('.globe-img');
+    if (!g) return;
+    var r = g.getBoundingClientRect();
+    if (r.width === 0) return; // not rendered yet
+    dot.style.left = Math.round(r.left + r.width  * 0.5 - 6) + 'px';
+    dot.style.top  = Math.round(r.top  + r.height * 0.5 - 6) + 'px';
   }
 
+  // Try now, on load, and on resize
   placeDot();
+  window.addEventListener('load', placeDot);
   window.addEventListener('resize', placeDot);
-  // Re-place after gif loads
-  var gi = document.querySelector('.globe-img');
-  if (gi) gi.addEventListener('load', placeDot);
+  // Poll briefly in case GIF dimensions settle late
+  var polls = 0;
+  var poll = setInterval(function() {
+    placeDot();
+    if (++polls > 10) clearInterval(poll);
+  }, 300);
 
-  // ── Position widget near the dot ──
+  // ── Position widget near dot ──
   function placeWidget() {
+    widget.style.visibility = 'hidden';
+    widget.style.display = 'block';
+    var ww = widget.offsetWidth;
+    var wh = widget.offsetHeight;
+    widget.style.display = 'none';
+    widget.style.visibility = '';
+
     var dr = dot.getBoundingClientRect();
-    var cx = dr.left + 6; // dot center x
-    var cy = dr.top  + 6; // dot center y
-    var ww = widget.offsetWidth  || 320;
-    var wh = widget.offsetHeight || 300;
+    var cx = dr.left + 6;
+    var cy = dr.top  + 6;
     var vw = window.innerWidth;
     var vh = window.innerHeight;
 
-    // Try above-centre first
-    var top  = cy - wh - 20;
+    var top  = cy - wh - 20;   // try above
     var left = cx - ww / 2;
 
-    // Clamp to viewport
-    if (top < 10) top = cy + 24;            // flip below if off top
-    if (left < 10) left = 10;
+    if (top < 70)            top  = cy + 24;        // flip below nav
+    if (left < 10)           left = 10;
     if (left + ww > vw - 10) left = vw - ww - 10;
-    if (top + wh > vh - 10) top = vh - wh - 10;
+    if (top + wh > vh - 10)  top  = vh - wh - 10;
 
     widget.style.top  = top  + 'px';
     widget.style.left = left + 'px';
   }
 
-  // ── Toggle widget ──
+  // ── Open/close with click-outside guard ──
   var isOpen = false;
+  var justOpened = false; // guard against same-tick close
+
   function openWidget() {
-    widget.style.display = 'block';
     placeWidget();
+    widget.style.display = 'block';
     isOpen = true;
+    justOpened = true;
+    setTimeout(function(){ justOpened = false; }, 0);
   }
   function closeWidget() {
     widget.style.display = 'none';
@@ -288,10 +299,13 @@ document.addEventListener('click', (e) => {
     });
   }
 
+  // Close on outside click — but guard with justOpened flag
   document.addEventListener('click', function (e) {
-    if (isOpen && !widget.contains(e.target) && e.target !== dot) {
-      closeWidget();
-    }
+    if (justOpened) return;
+    if (!isOpen) return;
+    if (widget.contains(e.target)) return;
+    if (dot.contains(e.target)) return;
+    closeWidget();
   });
 
   // ── Fetch IP data ──
@@ -302,42 +316,36 @@ document.addEventListener('click', (e) => {
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
 
-  // ip-api.com — free, no key, CORS enabled
   fetch('https://ip-api.com/json/?fields=status,query,isp,org,city,regionName,country,mobile,proxy,hosting,reverse')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
       if (d.status !== 'success') throw new Error('fail');
-
       document.getElementById('wIpAddr').textContent = d.query || '—';
-
       var typeLabel = 'Residential', typeCls = 'residential';
-      if (d.hosting)     { typeLabel = 'Hosting / DC';  typeCls = 'hosting'; }
-      else if (d.proxy)  { typeLabel = 'Proxy / VPN';   typeCls = 'proxy'; }
-      else if (d.mobile) { typeLabel = 'Mobile';        typeCls = 'mobile'; }
+      if (d.hosting)    { typeLabel = 'Hosting / DC'; typeCls = 'hosting'; }
+      else if (d.proxy) { typeLabel = 'Proxy / VPN';  typeCls = 'proxy'; }
+      else if (d.mobile){ typeLabel = 'Mobile';       typeCls = 'mobile'; }
       setVal('wIpType',   typeLabel, typeCls);
       setVal('wHostname', d.reverse || 'N/A');
       setVal('wIsp',      d.isp || d.org || 'N/A');
-      var loc = [d.city, d.regionName, d.country].filter(Boolean).join(', ');
-      setVal('wLocation', loc || 'N/A');
+      setVal('wLocation', [d.city, d.regionName, d.country].filter(Boolean).join(', ') || 'N/A');
     })
-    .catch(function(){
+    .catch(function() {
       document.getElementById('wIpAddr').textContent = 'Unavailable';
     });
 
-  // Referrer
   setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
 
-  // Connection type (navigator.connection — same as c99.nl)
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (nc) {
     var ct = (nc.effectiveType || '').toUpperCase();
     var dl = nc.downlink != null ? ', \u2193' + nc.downlink + ' Mbps' : '';
     setVal('wConnection', ct + dl);
   } else {
-    setVal('wConnection', 'API not supported');
+    setVal('wConnection', 'N/A');
   }
 
-  // Local IP via WebRTC (same method as c99.nl)
+  // WebRTC local IP
   try {
     var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
     pc.createDataChannel('');
@@ -345,10 +353,10 @@ document.addEventListener('click', (e) => {
     pc.onicecandidate = function(ice) {
       if (!ice || !ice.candidate || !ice.candidate.candidate) return;
       var m = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/g) || [];
-      var uniq = m.filter(function(v,i,a){ return a.indexOf(v)===i; });
+      var uniq = m.filter(function(v,i,a){ return a.indexOf(v) === i; });
       if (uniq.length) { setVal('wLocalIp', uniq.join(', ')); pc.onicecandidate = null; }
     };
-    setTimeout(function(){
+    setTimeout(function() {
       var el = document.getElementById('wLocalIp');
       if (el && el.textContent === '—') setVal('wLocalIp', 'Not detected');
     }, 3000);
