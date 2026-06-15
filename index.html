@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=31" />
+  <link rel="stylesheet" href="style.css?v=32" />
 </head>
 <body>
 
@@ -91,13 +91,17 @@
     </div>
 
     <!-- RIGHT — mockup
-         The GIF is loaded as a CSS background-image via JS (see style.css).
-         This avoids mix-blend-mode on <img> which flickers white on iOS Safari.
-         The .ci-mockup-bg div is the rendering surface; JS sets its background-image
-         to url(cyberint_superhd.gif) after the element is ready.
+         Video replaces the GIF to eliminate the white/black flicker bug on
+         iOS Safari and Android Chrome. <video> with autoplay+muted+loop+playsinline
+         is hardware-decoded and compositor-friendly — no blend-mode compositing
+         artifacts possible. WebM is served first (Android/Chrome), MP4 fallback
+         for iOS Safari.
     -->
     <div class="ci-mockup-wrap">
-      <div class="ci-mockup-bg" id="ciMockupBg"></div>
+      <video class="ci-mockup-video" autoplay muted loop playsinline preload="auto">
+        <source src="cyberint_superhd.webm" type="video/webm" />
+        <source src="cyberint_superhd.mp4"  type="video/mp4"  />
+      </video>
     </div>
 
   </section>
@@ -129,6 +133,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=34"></script>
+  <script src="main.js?v=35"></script>
 </body>
 </html>

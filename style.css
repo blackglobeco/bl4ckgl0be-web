@@ -388,10 +388,7 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  /* Mask goes on the WRAP, not on ci-mockup-bg.
-     Separating mask from background-blend-mode avoids the iOS Safari
-     compositing bug where a mask on the same layer as blend-mode
-     causes the GIF frames to flash white. */
+  /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -406,25 +403,20 @@ body {
   );
 }
 
-.ci-mockup-bg {
+/* ── Video mockup — replaces GIF background-image trick ──
+   <video autoplay muted loop playsinline> is hardware-decoded
+   by the mobile GPU and has zero flicker/compositing issues.
+   mix-blend-mode: screen works correctly on video elements
+   (unlike animated GIFs) on both iOS Safari and Android Chrome. */
+.ci-mockup-video {
   position: absolute;
-  inset: 0;
-  /* Layer 1 (top): GIF — set via JS as background-image
-     Layer 2 (bottom): solid black
-     background-blend-mode: screen blends GIF against black:
-       black GIF pixels → transparent  ✓
-       bright GIF pixels → stay bright ✓
-     No white flash possible on any browser. */
-  background-color: var(--black);
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center center;
-  background-blend-mode: screen;
-  /* Force GPU compositing layer — prevents iOS from re-compositing
-     against white between GIF frames */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  /* Mask is intentionally NOT on this element — it lives on .ci-mockup-wrap */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: screen;
 }
 
 /* ══════════════════════════════
@@ -644,7 +636,10 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    padding-top: calc(var(--nav-h) + 36px);
+    /* padding-top = nav height only; scroll-margin-top handles the nav offset.
+       The extra 36px spacing is moved to ci-text margin-top below so it shows
+       below the nav instead of creating a gap above visible content. */
+    padding-top: var(--nav-h);
     padding-bottom: 56px;
     overflow: visible;
     scroll-margin-top: var(--nav-h);
@@ -654,6 +649,7 @@ body {
     width: 100%;
     min-width: unset;
     padding: 0 var(--gutter);
+    margin-top: 36px;
     margin-bottom: 32px;
   }
   .ci-title { font-size: clamp(22px, 7vw, 34px); line-height: 1.2; }
@@ -675,8 +671,7 @@ body {
     min-height: 220px;
     max-height: 360px;
     overflow: hidden;
-    /* On mobile: radial mask fades all edges — kept on the WRAP (not .ci-mockup-bg)
-       to avoid the iOS GPU compositing bug (mask + blend-mode on same element = white flash) */
+    /* Radial mask fades all edges — stays on WRAP, never on video element */
     -webkit-mask-image: radial-gradient(
       ellipse 95% 90% at 50% 50%,
       black 50%,
@@ -689,11 +684,10 @@ body {
     );
   }
 
-  /* On mobile: remove any mask from ci-mockup-bg (mask lives on wrapper);
-     background-blend-mode: screen still eliminates white flash */
-  .ci-mockup-bg {
-    -webkit-mask-image: none;
-    mask-image: none;
+  .ci-mockup-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .ip-widget  { width: 280px; }

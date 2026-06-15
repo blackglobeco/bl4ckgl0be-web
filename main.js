@@ -67,19 +67,6 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
   });
 });
 
-// ── Mockup GIF — inject as CSS background-image to fix iOS white-flicker ──
-// Using background-image + background-blend-mode: screen instead of
-// <img mix-blend-mode:screen> because iOS Safari/Chrome fail to blend
-// animated GIFs correctly via element blend modes (white flash on each loop).
-// background-blend-mode blends against background-color before compositing,
-// so it is immune to the iOS GPU compositing bug.
-(function () {
-  var bg = document.getElementById('ciMockupBg');
-  if (!bg) return;
-  // Set background-image — browser starts loading the GIF now
-  bg.style.backgroundImage = "url('cyberint_superhd.gif')";
-})();
-
 // ── IP Widget ──────────────────────────────
 (function () {
 
