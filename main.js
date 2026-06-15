@@ -116,11 +116,12 @@ document.addEventListener('click', (e) => {
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
+  // After getting an IP, look up full geo via ipwho.is/{ip}
   function geoLookup(ip) {
     return fetch('https://ipwho.is/' + ip)
       .then(function (r) { return r.json(); })
       .then(function (g) {
-        if (!g.success) throw new Error('fail');
+        if (!g.success) throw new Error('geo fail');
         var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
         var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
         var type = 'Residential';
@@ -133,56 +134,40 @@ document.addEventListener('click', (e) => {
       });
   }
 
-  // ── Data strategy ──
-  // 1. /api/ip  — Vercel Edge Function reads CF-Pseudo-IPv4 (server-side, always IPv4)
-  // 2. api4.ipify.org — IPv4-only endpoint, browser forced to use IPv4
-  // 3. ipwho.is auto  — whatever IP the browser connects with
-  // 4. ipapi.co       — last resort
-
-  function tryOwnApi() {
-    return fetch('/api/ip')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ip || d.ip === 'unknown' || d.ip.includes(':')) throw new Error('no ipv4');
-        return geoLookup(d.ip);
-      });
-  }
-
-  function tryIpifyV4() {
-    // api4.ipify.org has NO AAAA record — browser physically can't use IPv6
-    return fetch('https://api4.ipify.org?format=json')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ip) throw new Error('fail');
-        return geoLookup(d.ip);
-      });
-  }
-
-  function tryIpwho() {
-    return fetch('https://ipwho.is/')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.success || !d.ip) throw new Error('fail');
-        var isp = (d.connection && d.connection.isp) ? d.connection.isp : 'N/A';
-        var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
-        fillGeo(d.ip, isp, loc || 'N/A', 'Residential');
-      });
-  }
-
-  function tryIpapi() {
-    return fetch('https://ipapi.co/json/')
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d.ip || d.error) throw new Error('fail');
-        var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
-        fillGeo(d.ip, d.org || 'N/A', loc || 'N/A', 'Residential');
-      });
-  }
-
-  tryOwnApi()
-    .catch(function () { return tryIpifyV4(); })
-    .catch(function () { return tryIpwho(); })
-    .catch(function () { return tryIpapi(); })
+  // ── STEP 1: api4.ipify.org ──────────────────────────────────────────
+  // This domain resolves ONLY to an IPv4 A record (no AAAA record exists).
+  // The browser is therefore physically forced to connect over IPv4,
+  // regardless of whether the network supports IPv6.
+  // This is the same technique used by many dual-stack detection tools.
+  // ────────────────────────────────────────────────────────────────────
+  fetch('https://api4.ipify.org?format=json')
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (!d.ip) throw new Error('no ip');
+      // d.ip is guaranteed IPv4 — now get full geo for it
+      return geoLookup(d.ip);
+    })
+    .catch(function () {
+      // Fallback: ipwho.is auto (may return IPv6 but better than nothing)
+      return fetch('https://ipwho.is/')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success || !d.ip) throw new Error('fail');
+          var isp = (d.connection && d.connection.isp) ? d.connection.isp : 'N/A';
+          var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
+          fillGeo(d.ip, isp, loc || 'N/A', 'Residential');
+        });
+    })
+    .catch(function () {
+      // Last resort: ipapi.co
+      return fetch('https://ipapi.co/json/')
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.ip || d.error) throw new Error('fail');
+          var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
+          fillGeo(d.ip, d.org || 'N/A', loc || 'N/A', 'Residential');
+        });
+    })
     .catch(function () {
       document.getElementById('wIpAddr').textContent = 'Unavailable';
       setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
