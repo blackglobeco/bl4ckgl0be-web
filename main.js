@@ -116,30 +116,34 @@ document.addEventListener('click', (e) => {
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
-  // Geo lookup for a specific IP — try ipwho.is first, then ipapi.co
+  // Geo lookup for a specific IP
+  // PRIMARY: ipapi.co — matches Cloudflare geo data (same source as c99.nl)
+  // FALLBACK: ipwho.is — if ipapi.co fails
   function geoForIP(ip) {
-    return fetch('https://ipwho.is/' + ip)
+    return fetch('https://ipapi.co/' + ip + '/json/')
       .then(function (r) { return r.json(); })
-      .then(function (g) {
-        if (!g || !g.success) throw new Error('ipwho fail');
-        var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
-        var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
+      .then(function (d) {
+        if (!d || d.error) throw new Error('ipapi fail');
+        var isp  = d.org || d.asn || 'N/A';
+        var loc  = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
         var type = 'Residential';
-        if (g.connection) {
-          var org = (g.connection.org || '').toLowerCase();
-          if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
-          else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
-        }
         fillGeo(isp, loc, type);
       })
       .catch(function () {
-        // ipwho.is failed — fallback to ipapi.co with the same IP
-        return fetch('https://ipapi.co/' + ip + '/json/')
+        // Fallback to ipwho.is
+        return fetch('https://ipwho.is/' + ip)
           .then(function (r) { return r.json(); })
-          .then(function (d) {
-            if (!d || d.error) throw new Error('ipapi fail');
-            var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
-            fillGeo(d.org || d.asn || 'N/A', loc, 'Residential');
+          .then(function (g) {
+            if (!g || !g.success) throw new Error('ipwho fail');
+            var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
+            var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
+            var type = 'Residential';
+            if (g.connection) {
+              var org = (g.connection.org || '').toLowerCase();
+              if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
+              else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
+            }
+            fillGeo(isp, loc, type);
           });
       });
   }
