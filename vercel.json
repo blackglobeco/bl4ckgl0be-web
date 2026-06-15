@@ -1,20 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "api/ip.js": {
-      "runtime": "edge"
-    }
-  },
-  "routes": [
-    {
-      "src": "/api/ip",
-      "dest": "/api/ip.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
