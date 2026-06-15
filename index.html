@@ -11,15 +11,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=28" />
+  <link rel="stylesheet" href="style.css?v=29" />
 </head>
 <body>
-
 
   <!-- NAV -->
   <nav id="navbar">
     <div class="nav-inner">
-      <a href="#" class="nav-logo">
+      <a href="#hero" class="nav-logo nav-scroll">
         <img src="blackglobelogo.gif" alt="Black Globe icon" class="logo-icon" />
         <span class="logo-text">BLACK GLOBE</span>
       </a>
@@ -28,14 +27,13 @@
       </button>
       <ul class="nav-links" id="navLinks">
         <li><a href="#cyber-intelligence" class="nav-scroll">Cyber Intelligence</a></li>
-        <li><a href="#">BlackAI GO</a></li>
         <li><a href="#" class="nav-cta">Contact</a></li>
       </ul>
     </div>
   </nav>
 
-  <!-- HERO -->
-  <section class="hero">
+  <!-- PAGE 1 — HERO -->
+  <section class="hero" id="hero">
     <div class="hero-globe-wrap">
       <div class="globe-glow"></div>
       <img src="blackglobe.gif" alt="Black Globe rotating" class="globe-img" />
@@ -54,33 +52,45 @@
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════
-       CYBER INTELLIGENCE SECTION
-       ═══════════════════════════════════════ -->
-  <section class="ci-section" id="cyber-intelligence">
+  <!-- PAGE 2 — CYBER INTELLIGENCE -->
+  <section class="ci-page" id="cyber-intelligence">
 
-    <!-- Top divider -->
-    <div class="ci-divider">
-      <span class="ci-divider-line"></span>
-      <span class="ci-divider-label">PLATFORM OVERVIEW</span>
-      <span class="ci-divider-line"></span>
-    </div>
-
-    <!-- Section header -->
-    <div class="ci-header">
+    <!-- LEFT — text panel -->
+    <div class="ci-text">
       <p class="ci-eyebrow">BLACK GLOBE INTELLIGENCE SUITE</p>
-      <h2 class="ci-title">Cyber Intelligence<br/>Platform</h2>
+      <h2 class="ci-title">Cyber<br/>Intelligence<br/>Platform</h2>
       <div class="ci-rule"></div>
       <p class="ci-desc">
         A unified, real-time intelligence operations centre — fusing open-source data streams, OSINT tooling, live threat feeds, and geospatial awareness into a single command surface.
       </p>
+
+      <!-- Stat pills -->
+      <div class="ci-stats">
+        <div class="ci-stat">
+          <span class="ci-stat-num">170+</span>
+          <span class="ci-stat-lbl">Live Data Layers</span>
+        </div>
+        <div class="ci-stat">
+          <span class="ci-stat-num">23</span>
+          <span class="ci-stat-lbl">Global Feeds</span>
+        </div>
+        <div class="ci-stat">
+          <span class="ci-stat-num">11</span>
+          <span class="ci-stat-lbl">OSINT Tools</span>
+        </div>
+        <div class="ci-stat">
+          <span class="ci-stat-num">10</span>
+          <span class="ci-stat-lbl">Region Presets</span>
+        </div>
+      </div>
+
       <a href="https://cyberintelligence.blackglobe.qzz.io" target="_blank" rel="noopener" class="ci-launch-btn">
         <span>LAUNCH PLATFORM</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       </a>
     </div>
 
-    <!-- Mockup GIF -->
+    <!-- RIGHT — mockup -->
     <div class="ci-mockup-wrap">
       <div class="ci-mockup-glow"></div>
       <img
@@ -91,79 +101,9 @@
       />
     </div>
 
-    <!-- Capability grid -->
-    <div class="ci-grid">
-
-      <div class="ci-card">
-        <div class="ci-card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cc2222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </div>
-        <div class="ci-card-num">170+</div>
-        <div class="ci-card-label">Live Data Layers</div>
-        <p class="ci-card-body">Aviation, maritime, satellite, CCTV, SIGINT news, seismic, wildfire, nuclear, and weather streams — all toggle-able on a live global map.</p>
-      </div>
-
-      <div class="ci-card">
-        <div class="ci-card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cc2222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <div class="ci-card-num">23</div>
-        <div class="ci-card-label">Global Live Feeds</div>
-        <p class="ci-card-body">Streaming live news from NBC, Sky News, Al Jazeera, NHK, Bloomberg and 18 more international sources — fused into a single SIGINT feed panel.</p>
-      </div>
-
-      <div class="ci-card">
-        <div class="ci-card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cc2222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-        </div>
-        <div class="ci-card-num">11</div>
-        <div class="ci-card-label">OSINT Recon Tools</div>
-        <p class="ci-card-body">Built-in toolkit: Global IP Sweep, Port Scan, Vulnerability Scan, DNS, WHOIS, Certificate lookup, Threat Intel, HTTP Headers, SSL/TLS, Subdomain enumeration, and Tech Detection.</p>
-      </div>
-
-      <div class="ci-card">
-        <div class="ci-card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cc2222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        </div>
-        <div class="ci-card-num">Live</div>
-        <div class="ci-card-label">Markets & Threat Finance</div>
-        <p class="ci-card-body">Real-time defence stocks, energy commodities, indices, and crypto tracked alongside threat intelligence — connecting geopolitical risk to capital markets.</p>
-      </div>
-
-      <div class="ci-card">
-        <div class="ci-card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cc2222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        </div>
-        <div class="ci-card-num">10</div>
-        <div class="ci-card-label">Region Presets</div>
-        <p class="ci-card-body">Instant-focus region presets: Global, Europe, Middle East, East Asia, Americas, Ukraine, Africa, South-East Asia, Arctic, and more — snapping the map to active theatres in one click.</p>
-      </div>
-
-      <div class="ci-card">
-        <div class="ci-card-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cc2222" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="ci-card-num">Real-Time</div>
-        <div class="ci-card-label">GPS Jamming & Threat Infra</div>
-        <p class="ci-card-body">Monitor active GPS jamming zones, nuclear facilities, global incident reports, and cell tower infrastructure — updated continuously from open-source defence datasets.</p>
-      </div>
-
-    </div>
-
-    <!-- Bottom CTA strip -->
-    <div class="ci-cta-strip">
-      <p class="ci-cta-copy">Built for operators, analysts, and security teams who need one surface for everything.</p>
-      <a href="https://cyberintelligence.blackglobe.qzz.io" target="_blank" rel="noopener" class="ci-cta-btn">
-        Open Cyber Intelligence Platform
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      </a>
-    </div>
-
   </section>
 
-  <!-- ═══════════════════════════════════════
-       IP WIDGET — fixed overlay, no parent clipping
-       ═══════════════════════════════════════ -->
+  <!-- IP WIDGET — fixed overlays -->
   <div id="ipDot" class="ip-dot">
     <div class="ip-dot-ping"></div>
     <div class="ip-dot-core"></div>
@@ -190,6 +130,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=31"></script>
+  <script src="main.js?v=32"></script>
 </body>
 </html>
