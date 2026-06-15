@@ -240,35 +240,64 @@ document.addEventListener('click', (e) => {
     placeDot(); if (++polls > 15) clearInterval(poll);
   }, 200);
 
-  // ── Position widget left of dot, never overlapping globe ──
+  // ── Position widget to the LEFT of the dot ──
+  // On the Black Globe site the globe sits on the RIGHT half of the screen,
+  // so the widget should open to the LEFT where the text content lives.
   function placeWidget() {
     widget.style.visibility = 'hidden';
-    widget.style.display = 'block';
-    var ww = widget.offsetWidth  || 320;
-    var wh = widget.offsetHeight || 320;
-    widget.style.display = 'none';
+    widget.style.display    = 'block';
+    var ww  = widget.offsetWidth  || 320;
+    var wh  = widget.offsetHeight || 320;
+    widget.style.display    = 'none';
     widget.style.visibility = '';
+
     var dr  = dot.getBoundingClientRect();
-    var dcx = dr.left + 6, dcy = dr.top + 6;
-    var vw  = window.innerWidth, vh = window.innerHeight;
-    var pad = 16, navH = 70;
-    var left = dcx - ww - 24;
+    var dcx = dr.left + 6;   // dot centre x
+    var dcy = dr.top  + 6;   // dot centre y
+    var vw  = window.innerWidth;
+    var vh  = window.innerHeight;
+    var pad  = 16;
+    var navH = 72;
+
+    // Always try LEFT first — globe is on right side
+    var left = dcx - ww - 32;
     var top  = dcy - wh / 2;
-    if (left < pad) left = dcx + 24;
+
+    // If not enough room on left (narrow screen), open RIGHT
+    if (left < pad) left = dcx + 32;
+
+    // Clamp to viewport bounds
     top  = Math.max(navH + pad, Math.min(vh - wh - pad, top));
     left = Math.max(pad, Math.min(vw - ww - pad, left));
-    widget.style.top  = top  + 'px';
-    widget.style.left = left + 'px';
+
+    widget.style.top  = Math.round(top)  + 'px';
+    widget.style.left = Math.round(left) + 'px';
   }
 
-  // ── Toggle open/close ──
-  var isOpen = false, justOpened = false;
-  function openWidget()  { placeWidget(); widget.style.display = 'block'; isOpen = true; justOpened = true; setTimeout(function(){ justOpened = false; }, 0); }
-  function closeWidget() { widget.style.display = 'none'; isOpen = false; }
+  // ── Toggle open / close ──
+  var isOpen     = false;
+  var justOpened = false;
 
-  dot.addEventListener('click', function(e) { e.stopPropagation(); isOpen ? closeWidget() : openWidget(); });
-  if (closeBtn) closeBtn.addEventListener('click', function(e) { e.stopPropagation(); closeWidget(); });
-  document.addEventListener('click', function(e) {
+  function openWidget() {
+    placeWidget();
+    widget.style.display = 'block';
+    isOpen     = true;
+    justOpened = true;
+    setTimeout(function () { justOpened = false; }, 0);
+  }
+  function closeWidget() {
+    widget.style.display = 'none';
+    isOpen = false;
+  }
+
+  dot.addEventListener('click', function (e) {
+    e.stopPropagation();
+    isOpen ? closeWidget() : openWidget();
+  });
+  if (closeBtn) closeBtn.addEventListener('click', function (e) {
+    e.stopPropagation(); closeWidget();
+  });
+  document.addEventListener('click', function (e) {
     if (justOpened || !isOpen) return;
     if (!dot.contains(e.target) && !widget.contains(e.target)) closeWidget();
   });
@@ -281,80 +310,76 @@ document.addEventListener('click', (e) => {
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
 
-  // ── Fetch IP data — three HTTPS CORS APIs, tried in order ──
-  // 1. ipwho.is   — HTTPS, no key, returns ip/isp/city/region/country/connection/type
-  // 2. ipapi.co   — HTTPS, no key, returns ip/org/city/region/country/hostname
-  // 3. freeipapi  — HTTPS, no key, last resort
+  // ── Fetch IP data — force IPv4 endpoints ──
+  // ipwho.is has ipv4.ipwho.is subdomain to force IPv4
+  // ipapi.co has ipv4.ipapi.co subdomain to force IPv4
 
-  function tryIpwho() {
-    return fetch('https://ipwho.is/')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (!d.success || !d.ip) throw new Error('ipwho fail');
-
-        document.getElementById('wIpAddr').textContent = d.ip;
-
-        var typeLabel = 'Residential', typeCls = 'residential';
-        if (d.type === 'IPv6')                        { typeLabel = 'IPv6 Residential'; typeCls = 'residential'; }
-        if (d.connection && d.connection.org) {
-          var org = d.connection.org.toLowerCase();
-          if (/vpn|proxy/i.test(org))                 { typeLabel = 'Proxy / VPN';    typeCls = 'proxy'; }
-          else if (/hosting|cloud|datacenter/i.test(org)){ typeLabel = 'Hosting / DC'; typeCls = 'hosting'; }
-        }
-        setVal('wIpType',   typeLabel, typeCls);
-        setVal('wHostname', 'N/A');   // ipwho doesn't provide reverse DNS
-        setVal('wIsp',      (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A'));
-        var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
-        setVal('wLocation', loc || 'N/A');
-        // Referrer from browser
-        setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+  function tryIpwhoV4() {
+    // ipv4.ipwho.is forces an IPv4 response
+    return fetch('https://ipv4.ipwho.is/')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success || !d.ip) throw new Error('ipwho-v4 fail');
+        populate(d.ip, d.connection && d.connection.isp ? d.connection.isp : (d.org || 'N/A'),
+                 [d.city, d.region, d.country].filter(Boolean).join(', '),
+                 detectType(d));
       });
   }
 
-  function tryIpapi() {
-    return fetch('https://ipapi.co/json/')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (!d.ip) throw new Error('ipapi fail');
-
-        document.getElementById('wIpAddr').textContent = d.ip;
-
-        setVal('wIpType',   'Residential', 'residential');
-        setVal('wHostname', d.hostname || 'N/A');
-        setVal('wIsp',      d.org || d.asn || 'N/A');
-        var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
-        setVal('wLocation', loc || 'N/A');
-        setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+  function tryIpapiV4() {
+    // ipv4.ipapi.co forces IPv4
+    return fetch('https://ipv4.ipapi.co/json/')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.ip) throw new Error('ipapi-v4 fail');
+        populate(d.ip, d.org || d.asn || 'N/A',
+                 [d.city, d.region, d.country_name].filter(Boolean).join(', '),
+                 'Residential');
       });
   }
 
   function tryFreeipapi() {
+    // freeipapi forces IPv4 via this endpoint
     return fetch('https://freeipapi.com/api/json')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
         if (!d.ipAddress) throw new Error('freeipapi fail');
-
-        document.getElementById('wIpAddr').textContent = d.ipAddress;
-
-        setVal('wIpType',   'Residential', 'residential');
-        setVal('wHostname', 'N/A');
-        setVal('wIsp',      d.ispName || 'N/A');
-        var loc = [d.cityName, d.regionName, d.countryName].filter(Boolean).join(', ');
-        setVal('wLocation', loc || 'N/A');
-        setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+        populate(d.ipAddress, d.ispName || 'N/A',
+                 [d.cityName, d.regionName, d.countryName].filter(Boolean).join(', '),
+                 'Residential');
       });
   }
 
-  // Try each in sequence until one succeeds
-  tryIpwho()
-    .catch(function(){ return tryIpapi(); })
-    .catch(function(){ return tryFreeipapi(); })
-    .catch(function(){
+  function detectType(d) {
+    if (!d.connection) return 'Residential';
+    var org = (d.connection.org || '').toLowerCase();
+    if (/vpn|proxy/i.test(org))                      return 'Proxy / VPN';
+    if (/hosting|cloud|data.?cent|server/i.test(org)) return 'Hosting / DC';
+    return 'Residential';
+  }
+
+  function populate(ip, isp, location, ipType) {
+    document.getElementById('wIpAddr').textContent = ip;
+    var cls = 'residential';
+    if (/proxy|vpn/i.test(ipType))    cls = 'proxy';
+    if (/hosting|dc/i.test(ipType))   cls = 'hosting';
+    if (/mobile/i.test(ipType))       cls = 'mobile';
+    setVal('wIpType',   ipType,    cls);
+    setVal('wHostname', 'N/A');
+    setVal('wIsp',      isp);
+    setVal('wLocation', location);
+    setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+  }
+
+  tryIpwhoV4()
+    .catch(function () { return tryIpapiV4(); })
+    .catch(function () { return tryFreeipapi(); })
+    .catch(function () {
       document.getElementById('wIpAddr').textContent = 'Unavailable';
       setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
     });
 
-  // ── Connection — navigator.connection (same method as c99.nl) ──
+  // ── Connection — navigator.connection ──
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (nc) {
     var ct = (nc.effectiveType || '').toUpperCase();
@@ -364,21 +389,23 @@ document.addEventListener('click', (e) => {
     setVal('wConnection', 'N/A');
   }
 
-  // ── Local IP — WebRTC (same method as c99.nl) ──
+  // ── Local IP — WebRTC ──
   try {
     var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
     pc.createDataChannel('');
-    pc.createOffer(function(sdp){ pc.setLocalDescription(sdp, function(){}, function(){}); }, function(){});
-    pc.onicecandidate = function(ice) {
+    pc.createOffer(function (sdp) {
+      pc.setLocalDescription(sdp, function () {}, function () {});
+    }, function () {});
+    pc.onicecandidate = function (ice) {
       if (!ice || !ice.candidate || !ice.candidate.candidate) return;
-      var m = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/g) || [];
-      var uniq = m.filter(function(v,i,a){ return a.indexOf(v)===i; });
+      var m    = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/g) || [];
+      var uniq = m.filter(function (v, i, a) { return a.indexOf(v) === i; });
       if (uniq.length) { setVal('wLocalIp', uniq.join(', ')); pc.onicecandidate = null; }
     };
-    setTimeout(function(){
+    setTimeout(function () {
       var el = document.getElementById('wLocalIp');
       if (el && el.textContent === '—') setVal('wLocalIp', 'Not detected');
     }, 3000);
-  } catch(e) { setVal('wLocalIp', 'Not supported'); }
+  } catch (e) { setVal('wLocalIp', 'Not supported'); }
 
 })();
