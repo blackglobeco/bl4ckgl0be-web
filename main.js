@@ -117,9 +117,9 @@ document.addEventListener('click', (e) => {
   }
 
   // ── Data strategy ──
-  // ipwho.is  → IP address, ISP, IP Type (primary source for everything)
-  // weatherapi → Location only (city/region/country — accurate database)
-  // Both run in parallel for speed. WeatherAPI location overwrites ipwho.is location if successful.
+  // ipwho.is   → IP, ISP, IP Type (primary — proven working)
+  // WeatherAPI → Location only, runs in parallel, overwrites ipwho.is location
+  // WeatherAPI → Full fallback if ipwho.is fails
 
   fetch('https://ipwho.is/')
     .then(function (r) { return r.json(); })
@@ -150,7 +150,7 @@ document.addEventListener('click', (e) => {
           }).catch(function () {});
       }
 
-      // Fetch accurate location from WeatherAPI in parallel — overwrite only location field
+      // WeatherAPI for better location — overwrites location field only
       fetch('https://api.weatherapi.com/v1/ip.json?key=7ca30df5844b4b6087230641212908&q=' + ip)
         .then(function (r) { return r.json(); })
         .then(function (w) {
@@ -161,8 +161,19 @@ document.addEventListener('click', (e) => {
         .catch(function () {}); // silently ignore — ipwho.is location already shown
     })
     .catch(function () {
-      document.getElementById('wIpAddr').textContent = 'Unavailable';
-      setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+      // ipwho.is failed — WeatherAPI as full fallback
+      fetch('https://api.weatherapi.com/v1/ip.json?key=7ca30df5844b4b6087230641212908&q=auto:ip')
+        .then(function (r) { return r.json(); })
+        .then(function (w) {
+          if (!w || w.error) throw new Error('weatherapi fail');
+          fillGeo(w.ip, w.isp || 'N/A',
+                  [w.city, w.region, w.country_name].filter(Boolean).join(', '),
+                  'Residential');
+        })
+        .catch(function () {
+          document.getElementById('wIpAddr').textContent = 'Unavailable';
+          setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+        });
     });
 
   // ── Connection — navigator.connection (same as c99.nl) ──
