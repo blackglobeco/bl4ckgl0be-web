@@ -90,11 +90,12 @@
       </a>
     </div>
 
-    <!-- RIGHT — mockup video
-         <video autoplay muted loop playsinline> is hardware-decoded with zero
-         compositing artifacts on iOS Safari and Android Chrome.
-         WebM (VP9) served first for Android/Chrome; MP4 (H.264) fallback for iOS.
-         No mix-blend-mode — video background naturally matches page black.
+    <!-- RIGHT — mockup
+         Video replaces the GIF to eliminate the white/black flicker bug on
+         iOS Safari and Android Chrome. <video> with autoplay+muted+loop+playsinline
+         is hardware-decoded and compositor-friendly — no blend-mode compositing
+         artifacts possible. WebM is served first (Android/Chrome), MP4 fallback
+         for iOS Safari.
     -->
     <div class="ci-mockup-wrap">
       <video class="ci-mockup-video" autoplay muted loop playsinline preload="auto">
@@ -132,6 +133,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=37"></script>
+  <script src="main.js?v=36"></script>
 </body>
 </html>
