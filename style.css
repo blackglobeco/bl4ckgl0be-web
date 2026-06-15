@@ -15,19 +15,27 @@
   --font-body:    'Inter', sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
 
-  --nav-h:  72px;
-  --gutter: clamp(28px, 4vw, 72px);
+  --nav-h:  64px;
+  --gutter: clamp(20px, 4vw, 72px);
   --max-w:  1280px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; overflow: hidden; }
+
+/* ── Allow scroll on all sizes; hero handles its own height ── */
+html { scroll-behavior: smooth; }
+html, body {
+  width: 100%;
+  min-height: 100%;
+  /* NOT overflow:hidden — lets mobile scroll work */
+}
 
 body {
   background: var(--black);
   color: var(--white);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 /* ══════════════════════════════
@@ -38,6 +46,11 @@ body {
   top: 0; left: 0; right: 0;
   z-index: 100;
   height: var(--nav-h);
+  /* subtle backdrop for legibility on mobile */
+  background: rgba(8,8,8,0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .nav-inner {
   max-width: var(--max-w);
@@ -83,7 +96,8 @@ body {
   text-decoration: none;
   transition: color 0.2s;
 }
-.nav-links a:hover { color: var(--white); }
+.nav-links a:hover,
+.nav-links a:focus-visible { color: var(--white); outline: none; }
 .nav-cta {
   background: var(--white) !important;
   color: var(--black) !important;
@@ -91,6 +105,7 @@ body {
   font-weight: 600 !important;
 }
 .nav-cta:hover { opacity: 0.85; }
+
 .nav-toggle {
   display: none;
   flex-direction: column;
@@ -98,14 +113,24 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 10px;
+  /* larger tap target */
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  align-items: center;
 }
 .nav-toggle span {
   display: block;
   width: 24px;
   height: 1.5px;
   background: var(--white);
+  transition: transform 0.25s, opacity 0.25s;
 }
+/* Animated hamburger → X */
+.nav-toggle.active span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-toggle.active span:nth-child(2) { opacity: 0; }
+.nav-toggle.active span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
 /* ══════════════════════════════
    HERO
@@ -113,18 +138,19 @@ body {
 .hero {
   position: relative;
   width: 100%;
-  height: 100vh;
+  /* 100dvh: accounts for mobile browser chrome (address bar) */
+  height: 100dvh;
+  min-height: 560px;
   overflow: hidden;
   background: var(--black);
   display: flex;
   align-items: center;
-  padding-top: 10vh; /* shift text slightly below true center like NSO */
+  padding-top: var(--nav-h);
 }
 
-/* ── Globe — spans right 65% of viewport, true center ── */
+/* ── Globe — right side, desktop ── */
 .hero-globe-wrap {
   position: absolute;
-  /* start from 30% left so globe center lands at ~65% of viewport */
   top: 0;
   left: 38%;
   right: 0;
@@ -144,25 +170,17 @@ body {
   );
 }
 
-/*
- * GIF is 500×500 white-on-white.
- * mix-blend-mode:screen makes the white background disappear on dark bg.
- * We scale it very large (vh-based) so it fills the right side like NSO.
- * No mask — let it breathe; the screen blend handles the bg.
- */
 .globe-img {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* Size relative to viewport height so it always fills the screen */
   width: 90vh;
   height: 90vh;
-  max-width: none;   /* allow it to exceed % constraints */
+  max-width: none;
   object-fit: contain;
   mix-blend-mode: screen;
   opacity: 1;
-  /* Very subtle left-edge fade only, to prevent text overlap */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -177,12 +195,12 @@ body {
   );
 }
 
-/* ── Text content — left, vertically centered-lower like NSO ── */
+/* ── Text content ── */
 .hero-content {
   position: relative;
   z-index: 2;
-  width: 42%;
-  min-width: 300px;
+  width: 45%;
+  min-width: 280px;
   padding: 0 var(--gutter);
 }
 
@@ -201,7 +219,6 @@ body {
   margin-bottom: 18px;
 }
 
-/* NSO title: medium weight, not bold display, ~28-32px equivalent */
 .hero-title {
   font-family: var(--font-body);
   font-size: clamp(20px, 2.2vw, 32px);
@@ -220,7 +237,6 @@ body {
   margin: 20px 0;
 }
 
-/* NSO body text: light weight, comfortable line-length */
 .hero-sub {
   font-size: clamp(12px, 1.1vw, 14px);
   font-weight: 300;
@@ -230,50 +246,127 @@ body {
 }
 
 /* ══════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — Tablet
 ══════════════════════════════ */
 @media (max-width: 900px) {
   .hero-content { width: 55%; }
   .globe-img { width: 70vh; height: 70vh; }
 }
 
+/* ══════════════════════════════
+   RESPONSIVE — Mobile
+══════════════════════════════ */
 @media (max-width: 768px) {
-  :root { --gutter: 24px; }
-  html, body { overflow: auto; }
+  :root {
+    --nav-h:  60px;
+    --gutter: 20px;
+  }
 
+  /* ── Mobile nav ── */
   .nav-links {
     display: none;
     flex-direction: column;
     position: fixed;
     top: var(--nav-h);
     left: 0; right: 0;
-    background: var(--black);
-    padding: 24px;
-    gap: 20px;
+    background: rgba(8,8,8,0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 28px var(--gutter) 32px;
+    gap: 0;
     border-bottom: 1px solid var(--border);
     z-index: 99;
   }
   .nav-links.open { display: flex; }
-  .nav-toggle { display: flex; }
-  .nav-cta { align-self: flex-start; }
-
-  .hero { height: 100svh; padding-top: 0; }
-  .hero-globe-wrap { left: 0; right: 0; top: var(--nav-h); height: 60%; }
-  .globe-img {
-    width: 85vw;
-    height: 85vw;
-    opacity: 0.25;
+  .nav-links li { border-bottom: 1px solid var(--border); }
+  .nav-links li:last-child { border-bottom: none; }
+  .nav-links a {
+    display: block;
+    padding: 16px 0;
+    font-size: 12px;
+    letter-spacing: 0.18em;
   }
+  .nav-cta {
+    margin-top: 8px;
+    display: inline-block !important;
+    padding: 12px 24px !important;
+    align-self: flex-start;
+  }
+  .nav-toggle { display: flex; }
+
+  /* ── Mobile hero: stack vertically ── */
+  .hero {
+    height: 100dvh;
+    min-height: 600px;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding-top: var(--nav-h);
+    padding-bottom: 48px;
+  }
+
+  /* Globe fills upper portion, centered behind text */
+  .hero-globe-wrap {
+    position: absolute;
+    top: var(--nav-h);
+    left: 0;
+    right: 0;
+    height: 55%;
+    overflow: hidden;
+  }
+  .globe-img {
+    width: 100vw;
+    height: 100vw;
+    max-width: 480px;
+    opacity: 0.30;
+    -webkit-mask-image: radial-gradient(
+      ellipse 70% 70% at 50% 40%,
+      black 40%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 70% 70% at 50% 40%,
+      black 40%,
+      transparent 100%
+    );
+  }
+
+  /* Text sits bottom-left over the faded globe */
   .hero-content {
+    position: relative;
+    z-index: 2;
     width: 100%;
     min-width: unset;
-    padding: 0 var(--gutter) 48px;
+    padding: 0 var(--gutter);
   }
-  .hero-title { font-size: clamp(18px, 6vw, 26px); }
+
+  .hero-eyebrow {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+  }
+
+  .hero-title {
+    font-size: clamp(22px, 7vw, 34px);
+    line-height: 1.2;
+  }
+
+  .hero-rule { margin: 16px 0; }
+
+  .hero-sub {
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 100%;
+  }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+/* ══════════════════════════════
+   RESPONSIVE — Small mobile
+══════════════════════════════ */
+@media (max-width: 390px) {
+  .hero-title { font-size: 20px; }
+  .logo-text  { font-size: 18px; }
+  .hero-sub   { font-size: 12px; }
 }
 
 /* ══════════════════════════════
@@ -281,10 +374,8 @@ body {
 ══════════════════════════════ */
 .animated-background-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   z-index: 0;
   pointer-events: none;
   background: #000;
@@ -293,13 +384,11 @@ body {
 
 .animated-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
 }
 
-/* Subtle scanlines — cyberpunk CRT feel */
+/* Scanlines */
 .scanlines {
   position: absolute;
   inset: 0;
@@ -307,8 +396,8 @@ body {
   pointer-events: none;
   background: repeating-linear-gradient(
     to bottom,
-    rgba(255, 255, 255, 0.035) 0px,
-    rgba(255, 255, 255, 0.035) 1px,
+    rgba(255,255,255,0.035) 0px,
+    rgba(255,255,255,0.035) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -324,8 +413,7 @@ body {
 
 .background-text {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   z-index: 3;
   text-align: center;
@@ -345,6 +433,7 @@ body {
     0 0 18px rgba(255,255,255,0.25),
     0 0 42px rgba(255,255,255,0.12);
   animation: title-flicker 7s infinite steps(1);
+  white-space: nowrap;
 }
 
 .glitch-text::before,
@@ -412,17 +501,20 @@ body {
   93%, 100%   { opacity: 0;   transform: translate(0,0); }
 }
 
-/* Ensure hero & nav sit above background */
+/* Z-index hierarchy */
 #navbar { z-index: 100; }
 .hero   { z-index: 10; }
 
 @media (max-width: 768px) {
-  .glitch-text { font-size: 2.8rem; }
+  .glitch-text { font-size: 2.4rem; }
 }
 @media (max-width: 480px) {
-  .glitch-text { font-size: 2.2rem; }
+  .glitch-text { font-size: 1.8rem; }
 }
+
+/* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
   .scanlines,
   .glitch-text,
   .glitch-text::before,

@@ -5,9 +5,30 @@
 // ── Mobile nav toggle ──────────────────────
 const navToggle = document.getElementById('navToggle');
 const navLinks  = document.getElementById('navLinks');
-navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+
+navToggle.addEventListener('click', () => {
+  const isOpen = navLinks.classList.toggle('open');
+  navToggle.classList.toggle('active', isOpen);
+  navToggle.setAttribute('aria-expanded', isOpen);
+});
+
 navLinks.querySelectorAll('a').forEach(a => {
-  a.addEventListener('click', () => navLinks.classList.remove('open'));
+  a.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+    navToggle.classList.remove('active');
+    navToggle.setAttribute('aria-expanded', 'false');
+  });
+});
+
+// Close nav on outside tap (mobile)
+document.addEventListener('click', (e) => {
+  if (navLinks.classList.contains('open') &&
+      !navLinks.contains(e.target) &&
+      !navToggle.contains(e.target)) {
+    navLinks.classList.remove('open');
+    navToggle.classList.remove('active');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
 });
 
 // ── Animated Background Canvas ─────────────
@@ -17,8 +38,12 @@ navLinks.querySelectorAll('a').forEach(a => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
+  // Reduce particles on mobile for performance
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+                   window.innerWidth < 768;
+
   let width, height;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
 
   function resizeCanvas() {
     width  = window.innerWidth;
@@ -31,14 +56,26 @@ navLinks.querySelectorAll('a').forEach(a => {
   }
 
   resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+
+  // Debounced resize to avoid thrashing on mobile orientation change
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      resizeCanvas();
+      particles = createParticles();
+    }, 150);
+  });
 
   // ── Create particles ──
   function createParticles() {
     const particles = [];
-    const count = Math.min(110, Math.floor((width * height) / 12000));
+    // Fewer particles on mobile
+    const maxCount = isMobile ? 50 : 110;
+    const density  = isMobile ? 18000 : 12000;
+    const count    = Math.min(maxCount, Math.floor((width * height) / density));
     for (let i = 0; i < count; i++) {
-      const hasOrbit = Math.random() < 0.22;
+      const hasOrbit = !isMobile && Math.random() < 0.22; // skip orbits on mobile
       particles.push({
         x: Math.random() * width,
         y: Math.random() * height,
@@ -57,10 +94,18 @@ navLinks.querySelectorAll('a').forEach(a => {
   }
 
   let particles = createParticles();
-  window.addEventListener('resize', () => { particles = createParticles(); });
+
+  // ── Pause when tab/page hidden (saves battery on mobile) ──
+  let paused = false;
+  document.addEventListener('visibilitychange', () => {
+    paused = document.hidden;
+    if (!paused) requestAnimationFrame(animate);
+  });
 
   // ── Animation loop ──
   function animate(time) {
+    if (paused) return;
+
     // Motion-trail fade
     ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
     ctx.fillRect(0, 0, width, height);
@@ -77,6 +122,7 @@ navLinks.querySelectorAll('a').forEach(a => {
     ctx.fillRect(0, 0, width, height);
 
     // ── Connections ──
+    const connDist = isMobile ? 110 : 140;
     for (let i = 0; i < particles.length; i++) {
       const p = particles[i];
       for (let j = i + 1; j < particles.length; j++) {
@@ -85,8 +131,8 @@ navLinks.querySelectorAll('a').forEach(a => {
         const dy = p.y - o.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < 140) {
-          const opacity = ((140 - dist) / 140) * 0.32;
+        if (dist < connDist) {
+          const opacity = ((connDist - dist) / connDist) * 0.32;
           const pulse   = Math.sin(time * 0.0022 + dist * 0.012) * 0.3 + 0.7;
 
           ctx.beginPath();
@@ -96,8 +142,8 @@ navLinks.querySelectorAll('a').forEach(a => {
           ctx.lineWidth = Math.max(0.4, opacity * 2.2);
           ctx.stroke();
 
-          // Data packet
-          if (dist < 100 && Math.random() < 0.015) {
+          // Data packets — skip on mobile for performance
+          if (!isMobile && dist < 100 && Math.random() < 0.015) {
             const progress = (Math.sin(time * 0.004 + dist) + 1) / 2;
             const px = p.x + (o.x - p.x) * progress;
             const py = p.y + (o.y - p.y) * progress;
@@ -141,7 +187,7 @@ navLinks.querySelectorAll('a').forEach(a => {
       ctx.fillStyle = `rgba(255,255,255,${Math.min(1, opacity + 0.35)})`;
       ctx.fill();
 
-      // Orbiting electron
+      // Orbiting electron (desktop only)
       if (p.hasOrbit) {
         p.orbitAngle += p.orbitSpeed;
         const ex = p.x + Math.cos(p.orbitAngle) * p.orbitRadius;
