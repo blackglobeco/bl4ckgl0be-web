@@ -363,7 +363,22 @@ body {
 .ci-launch-btn svg { flex-shrink: 0; opacity: 0.55; }
 
 /* ══════════════════════════════════════════════
-   RIGHT MOCKUP — video panel
+   RIGHT MOCKUP — GIF white-flicker fix
+   ──────────────────────────────────────────────
+   Root cause on iOS Safari / Android Chrome:
+   mix-blend-mode on <img> GIFs composites each frame
+   against white at the GPU level before the page blend
+   is applied — causing a full white flash every loop.
+
+   THE FIX: Render the GIF as CSS background-image.
+   background-blend-mode blends layers against the
+   element's own background-color (black) internally —
+   BEFORE the element is composited to the page.
+   Result: dark GIF pixels → transparent, no white flash,
+   works on every browser including iOS Safari.
+
+   The background-image URL is injected by JS so the GIF
+   starts loading only when the element exists in DOM.
 ══════════════════════════════════════════════ */
 .ci-mockup-wrap {
   position: absolute;
@@ -388,10 +403,11 @@ body {
   );
 }
 
-/* ── Video mockup ──
-   object-fit: contain preserves the full laptop+phone composition at its
-   natural proportions. background-color: #080808 matches --black exactly
-   so the surrounding area is seamless. No mix-blend-mode. */
+/* ── Video mockup — replaces GIF background-image trick ──
+   <video autoplay muted loop playsinline> is hardware-decoded
+   by the mobile GPU and has zero flicker/compositing issues.
+   mix-blend-mode: screen works correctly on video elements
+   (unlike animated GIFs) on both iOS Safari and Android Chrome. */
 .ci-mockup-video {
   position: absolute;
   top: 50%;
@@ -400,7 +416,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background-color: #080808;
+  mix-blend-mode: screen;
 }
 
 /* ══════════════════════════════
@@ -620,14 +636,13 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    /* padding-top: 0 + scroll-margin-top: 0 — the JS scroll calculation
-       (getBoundingClientRect + pageYOffset - navH) already places the
-       section top exactly at the navbar bottom. ci-text margin-top: 36px
-       provides the breathing room below. No CSS offsets needed here. */
-    padding-top: 0;
+    /* padding-top = nav height only; scroll-margin-top handles the nav offset.
+       The extra 36px spacing is moved to ci-text margin-top below so it shows
+       below the nav instead of creating a gap above visible content. */
+    padding-top: var(--nav-h);
     padding-bottom: 56px;
     overflow: visible;
-    scroll-margin-top: 0;
+    scroll-margin-top: var(--nav-h);
   }
 
   .ci-text {
@@ -672,8 +687,7 @@ body {
   .ci-mockup-video {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    background-color: #080808;
+    object-fit: cover;
   }
 
   .ip-widget  { width: 280px; }
