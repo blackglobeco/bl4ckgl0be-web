@@ -103,8 +103,8 @@ document.addEventListener('click', (e) => {
     el.textContent = text || 'N/A';
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
-  function fillGeo(ip, isp, location, ipType) {
-    document.getElementById('wIpAddr').textContent = ip;
+
+  function fillGeo(isp, location, ipType) {
     var cls = 'residential';
     if (/proxy|vpn/i.test(ipType))       cls = 'proxy';
     else if (/hosting|dc/i.test(ipType)) cls = 'hosting';
@@ -116,59 +116,58 @@ document.addEventListener('click', (e) => {
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
-  // ── Data strategy ──
-  // ipwho.is   → IP, ISP, IP Type (primary — proven working)
-  // WeatherAPI → Location only, runs in parallel, overwrites ipwho.is location
-  // WeatherAPI → Full fallback if ipwho.is fails
+  // Geo lookup for a specific IP
+  // PRIMARY: ipapi.co — matches Cloudflare geo data (same source as c99.nl)
+  // FALLBACK: ipwho.is — if ipapi.co fails
+  function geoForIP(ip) {
+    return fetch('https://ipapi.co/' + ip + '/json/')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || d.error) throw new Error('ipapi fail');
+        var isp  = d.org || d.asn || 'N/A';
+        var loc  = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
+        var type = 'Residential';
+        fillGeo(isp, loc, type);
+      })
+      .catch(function () {
+        // Fallback to ipwho.is
+        return fetch('https://ipwho.is/' + ip)
+          .then(function (r) { return r.json(); })
+          .then(function (g) {
+            if (!g || !g.success) throw new Error('ipwho fail');
+            var isp  = (g.connection && g.connection.isp) ? g.connection.isp : (g.org || 'N/A');
+            var loc  = [g.city, g.region, g.country].filter(Boolean).join(', ');
+            var type = 'Residential';
+            if (g.connection) {
+              var org = (g.connection.org || '').toLowerCase();
+              if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
+              else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
+            }
+            fillGeo(isp, loc, type);
+          });
+      });
+  }
 
-  fetch('https://ipwho.is/')
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d || !d.success || !d.ip) throw new Error('ipwho fail');
-
-      var ip   = d.ip;
-      var isp  = (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A');
-      var loc  = [d.city, d.region, d.country].filter(Boolean).join(', ');
-      var type = 'Residential';
-      if (d.connection) {
-        var org = (d.connection.org || '').toLowerCase();
-        if (/vpn|proxy/i.test(org))                            type = 'Proxy / VPN';
-        else if (/hosting|cloud|data.?cent|server/i.test(org)) type = 'Hosting / DC';
-      }
-
-      // Show ipwho.is data immediately
-      fillGeo(ip, isp, loc, type);
-
-      // If IPv6, silently try to upgrade IP display to IPv4
-      if (ip.indexOf(':') !== -1) {
-        fetch('https://ipv4.icanhazip.com')
-          .then(function (r) { return r.text(); })
-          .then(function (t) {
-            var v4 = t.trim();
-            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(v4))
-              document.getElementById('wIpAddr').textContent = v4;
-          }).catch(function () {});
-      }
-
-      // WeatherAPI for better location — overwrites location field only
-      fetch('https://api.weatherapi.com/v1/ip.json?key=7ca30df5844b4b6087230641212908&q=' + ip)
-        .then(function (r) { return r.json(); })
-        .then(function (w) {
-          if (!w || w.error) return;
-          var betterLoc = [w.city, w.region, w.country_name].filter(Boolean).join(', ');
-          if (betterLoc) setVal('wLocation', betterLoc);
-        })
-        .catch(function () {}); // silently ignore — ipwho.is location already shown
+  // ── STEP 1: ipv4.icanhazip.com — Cloudflare-owned, returns plain text IPv4 ──
+  // ── STEP 2: pass that IPv4 to geo lookup ──
+  fetch('https://ipv4.icanhazip.com')
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var ipv4 = t.trim();
+      if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(ipv4)) throw new Error('not ipv4');
+      document.getElementById('wIpAddr').textContent = ipv4;
+      return geoForIP(ipv4);
     })
     .catch(function () {
-      // ipwho.is failed — WeatherAPI as full fallback
-      fetch('https://api.weatherapi.com/v1/ip.json?key=7ca30df5844b4b6087230641212908&q=auto:ip')
+      // icanhazip failed — try ipwho.is auto-detect as full fallback
+      return fetch('https://ipwho.is/')
         .then(function (r) { return r.json(); })
-        .then(function (w) {
-          if (!w || w.error) throw new Error('weatherapi fail');
-          fillGeo(w.ip, w.isp || 'N/A',
-                  [w.city, w.region, w.country_name].filter(Boolean).join(', '),
-                  'Residential');
+        .then(function (g) {
+          if (!g || !g.success || !g.ip) throw new Error('fail');
+          document.getElementById('wIpAddr').textContent = g.ip;
+          var isp = (g.connection && g.connection.isp) ? g.connection.isp : 'N/A';
+          var loc = [g.city, g.region, g.country].filter(Boolean).join(', ');
+          fillGeo(isp, loc, 'Residential');
         })
         .catch(function () {
           document.getElementById('wIpAddr').textContent = 'Unavailable';
