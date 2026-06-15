@@ -44,24 +44,17 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     navToggle.classList.remove('active');
     navToggle.setAttribute('aria-expanded', 'false');
 
-    // Wait two rAF cycles for the nav collapse + any repaint to settle,
-    // THEN scroll. On mobile we use scrollIntoView so that scroll-margin-top
-    // (set to --nav-h on .ci-page) is respected by the browser natively —
-    // this avoids the measurement drift caused by the dynamic URL bar on iOS.
-    // On desktop we keep the manual calculation which works reliably there.
+    // Wait two rAF cycles for the nav collapse + layout to settle,
+    // then scroll. Use precise pixel calculation on both mobile and desktop:
+    // target top relative to document minus nav height = exact landing point.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        var isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          var navH = parseInt(
-            getComputedStyle(document.documentElement)
-              .getPropertyValue('--nav-h')
-          ) || 64;
-          var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
-          window.scrollTo({ top: top, behavior: 'smooth' });
-        }
+        var navH = parseInt(
+          getComputedStyle(document.documentElement)
+            .getPropertyValue('--nav-h')
+        ) || 60;
+        var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
+        window.scrollTo({ top: top, behavior: 'smooth' });
       });
     });
   });
