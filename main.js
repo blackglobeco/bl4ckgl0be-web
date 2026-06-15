@@ -232,17 +232,15 @@ document.addEventListener('click', (e) => {
     dot.style.left = Math.round(r.left + r.width  * 0.5 - 6) + 'px';
     dot.style.top  = Math.round(r.top  + r.height * 0.5 - 6) + 'px';
   }
-
   placeDot();
   window.addEventListener('load', placeDot);
   window.addEventListener('resize', placeDot);
   var polls = 0;
   var poll = setInterval(function () {
-    placeDot();
-    if (++polls > 15) clearInterval(poll);
+    placeDot(); if (++polls > 15) clearInterval(poll);
   }, 200);
 
-  // ── Position widget — left of globe, never overlapping it ──
+  // ── Position widget left of dot, never overlapping globe ──
   function placeWidget() {
     widget.style.visibility = 'hidden';
     widget.style.display = 'block';
@@ -250,63 +248,32 @@ document.addEventListener('click', (e) => {
     var wh = widget.offsetHeight || 320;
     widget.style.display = 'none';
     widget.style.visibility = '';
-
     var dr  = dot.getBoundingClientRect();
-    var dcx = dr.left + 6;
-    var dcy = dr.top  + 6;
-    var vw  = window.innerWidth;
-    var vh  = window.innerHeight;
-    var pad = 16;
-    var navH = 70;
-
-    var left = dcx - ww - 24;   // try left of dot
-    var top  = dcy - wh / 2;    // vertically centred on dot
-
-    if (left < pad) left = dcx + 24;          // flip right if no room
-
-    top  = Math.max(navH + pad, top);
-    top  = Math.min(vh - wh - pad, top);
-    left = Math.max(pad, left);
-    left = Math.min(vw - ww - pad, left);
-
+    var dcx = dr.left + 6, dcy = dr.top + 6;
+    var vw  = window.innerWidth, vh = window.innerHeight;
+    var pad = 16, navH = 70;
+    var left = dcx - ww - 24;
+    var top  = dcy - wh / 2;
+    if (left < pad) left = dcx + 24;
+    top  = Math.max(navH + pad, Math.min(vh - wh - pad, top));
+    left = Math.max(pad, Math.min(vw - ww - pad, left));
     widget.style.top  = top  + 'px';
     widget.style.left = left + 'px';
   }
 
-  // ── Open / close ──
-  var isOpen     = false;
-  var justOpened = false;
+  // ── Toggle open/close ──
+  var isOpen = false, justOpened = false;
+  function openWidget()  { placeWidget(); widget.style.display = 'block'; isOpen = true; justOpened = true; setTimeout(function(){ justOpened = false; }, 0); }
+  function closeWidget() { widget.style.display = 'none'; isOpen = false; }
 
-  function openWidget() {
-    placeWidget();
-    widget.style.display = 'block';
-    isOpen     = true;
-    justOpened = true;
-    setTimeout(function () { justOpened = false; }, 0);
-  }
-  function closeWidget() {
-    widget.style.display = 'none';
-    isOpen = false;
-  }
-
-  dot.addEventListener('click', function (e) {
-    e.stopPropagation();
-    isOpen ? closeWidget() : openWidget();
-  });
-  if (closeBtn) {
-    closeBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      closeWidget();
-    });
-  }
-  document.addEventListener('click', function (e) {
-    if (justOpened) return;
-    if (!isOpen) return;
-    if (dot.contains(e.target) || widget.contains(e.target)) return;
-    closeWidget();
+  dot.addEventListener('click', function(e) { e.stopPropagation(); isOpen ? closeWidget() : openWidget(); });
+  if (closeBtn) closeBtn.addEventListener('click', function(e) { e.stopPropagation(); closeWidget(); });
+  document.addEventListener('click', function(e) {
+    if (justOpened || !isOpen) return;
+    if (!dot.contains(e.target) && !widget.contains(e.target)) closeWidget();
   });
 
-  // ── Helper to set a field value ──
+  // ── Helper ──
   function setVal(id, text, cls) {
     var el = document.getElementById(id);
     if (!el) return;
@@ -314,60 +281,80 @@ document.addEventListener('click', (e) => {
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
 
-  // ── Fetch & parse ip.c99.nl HTML directly ──
-  // The page server-renders IP, ISP, Location etc. from Cloudflare CF- headers
-  // so a plain fetch returns the visitor's real data without any API key.
-  fetch('https://ip.c99.nl/', {
-    method: 'GET',
-    credentials: 'omit',
-    headers: { 'Accept': 'text/html' }
-  })
-  .then(function (r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.text();
-  })
-  .then(function (html) {
-    var doc = new DOMParser().parseFromString(html, 'text/html');
+  // ── Fetch IP data — three HTTPS CORS APIs, tried in order ──
+  // 1. ipwho.is   — HTTPS, no key, returns ip/isp/city/region/country/connection/type
+  // 2. ipapi.co   — HTTPS, no key, returns ip/org/city/region/country/hostname
+  // 3. freeipapi  — HTTPS, no key, last resort
 
-    // ── Public IP — <h2 id="ip-address"> ──
-    var ipEl = doc.getElementById('ip-address');
-    var ip   = ipEl ? ipEl.textContent.trim() : null;
-    if (ip) document.getElementById('wIpAddr').textContent = ip;
+  function tryIpwho() {
+    return fetch('https://ipwho.is/')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.success || !d.ip) throw new Error('ipwho fail');
 
-    // ── Parse the <dl class="row"> key→value pairs ──
-    // Each pair is  <dt>Label</dt><dd>Value</dd>
-    var dts  = doc.querySelectorAll('.card-body dl.row dt');
-    var data = {};
-    dts.forEach(function (dt) {
-      var key = dt.textContent.trim();
-      // The value <dd> immediately follows the <dt>
-      var dd  = dt.nextElementSibling;
-      // Skip JS-spinner placeholders (they have <i> inside and no text)
-      var val = dd ? dd.textContent.trim() : '';
-      if (val && val !== '') data[key] = val;
+        document.getElementById('wIpAddr').textContent = d.ip;
+
+        var typeLabel = 'Residential', typeCls = 'residential';
+        if (d.type === 'IPv6')                        { typeLabel = 'IPv6 Residential'; typeCls = 'residential'; }
+        if (d.connection && d.connection.org) {
+          var org = d.connection.org.toLowerCase();
+          if (/vpn|proxy/i.test(org))                 { typeLabel = 'Proxy / VPN';    typeCls = 'proxy'; }
+          else if (/hosting|cloud|datacenter/i.test(org)){ typeLabel = 'Hosting / DC'; typeCls = 'hosting'; }
+        }
+        setVal('wIpType',   typeLabel, typeCls);
+        setVal('wHostname', 'N/A');   // ipwho doesn't provide reverse DNS
+        setVal('wIsp',      (d.connection && d.connection.isp) ? d.connection.isp : (d.org || 'N/A'));
+        var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
+        setVal('wLocation', loc || 'N/A');
+        // Referrer from browser
+        setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+      });
+  }
+
+  function tryIpapi() {
+    return fetch('https://ipapi.co/json/')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.ip) throw new Error('ipapi fail');
+
+        document.getElementById('wIpAddr').textContent = d.ip;
+
+        setVal('wIpType',   'Residential', 'residential');
+        setVal('wHostname', d.hostname || 'N/A');
+        setVal('wIsp',      d.org || d.asn || 'N/A');
+        var loc = [d.city, d.region, d.country_name].filter(Boolean).join(', ');
+        setVal('wLocation', loc || 'N/A');
+        setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+      });
+  }
+
+  function tryFreeipapi() {
+    return fetch('https://freeipapi.com/api/json')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (!d.ipAddress) throw new Error('freeipapi fail');
+
+        document.getElementById('wIpAddr').textContent = d.ipAddress;
+
+        setVal('wIpType',   'Residential', 'residential');
+        setVal('wHostname', 'N/A');
+        setVal('wIsp',      d.ispName || 'N/A');
+        var loc = [d.cityName, d.regionName, d.countryName].filter(Boolean).join(', ');
+        setVal('wLocation', loc || 'N/A');
+        setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+      });
+  }
+
+  // Try each in sequence until one succeeds
+  tryIpwho()
+    .catch(function(){ return tryIpapi(); })
+    .catch(function(){ return tryFreeipapi(); })
+    .catch(function(){
+      document.getElementById('wIpAddr').textContent = 'Unavailable';
+      setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
     });
 
-    // Map parsed keys to our widget fields
-    // IP Type
-    var ipType = data['IP Type'] || 'N/A';
-    var typeCls = '';
-    if (/residential/i.test(ipType))       typeCls = 'residential';
-    else if (/proxy|vpn/i.test(ipType))    typeCls = 'proxy';
-    else if (/hosting|data.?cent/i.test(ipType)) typeCls = 'hosting';
-    else if (/mobile/i.test(ipType))       typeCls = 'mobile';
-    setVal('wIpType',   ipType,              typeCls);
-    setVal('wHostname', data['Hostname']  || 'N/A');
-    setVal('wIsp',      data['ISP']       || 'N/A');
-    setVal('wLocation', data['Location']  || 'N/A');
-    setVal('wReferrer', data['Referrer']  || 'Direct Access / Not Provided');
-  })
-  .catch(function (err) {
-    console.warn('ip.c99.nl fetch failed:', err);
-    document.getElementById('wIpAddr').textContent = 'See ip.c99.nl';
-    // Fallback — still show what we can from browser APIs
-  });
-
-  // ── Connection — navigator.connection (same as c99.nl) ──
+  // ── Connection — navigator.connection (same method as c99.nl) ──
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (nc) {
     var ct = (nc.effectiveType || '').toUpperCase();
@@ -381,25 +368,17 @@ document.addEventListener('click', (e) => {
   try {
     var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
     pc.createDataChannel('');
-    pc.createOffer(
-      function (sdp) { pc.setLocalDescription(sdp, function(){}, function(){}); },
-      function () {}
-    );
-    pc.onicecandidate = function (ice) {
+    pc.createOffer(function(sdp){ pc.setLocalDescription(sdp, function(){}, function(){}); }, function(){});
+    pc.onicecandidate = function(ice) {
       if (!ice || !ice.candidate || !ice.candidate.candidate) return;
       var m = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/g) || [];
-      var uniq = m.filter(function (v, i, a) { return a.indexOf(v) === i; });
-      if (uniq.length) {
-        setVal('wLocalIp', uniq.join(', '));
-        pc.onicecandidate = null;
-      }
+      var uniq = m.filter(function(v,i,a){ return a.indexOf(v)===i; });
+      if (uniq.length) { setVal('wLocalIp', uniq.join(', ')); pc.onicecandidate = null; }
     };
-    setTimeout(function () {
+    setTimeout(function(){
       var el = document.getElementById('wLocalIp');
       if (el && el.textContent === '—') setVal('wLocalIp', 'Not detected');
     }, 3000);
-  } catch (e) {
-    setVal('wLocalIp', 'Not supported');
-  }
+  } catch(e) { setVal('wLocalIp', 'Not supported'); }
 
 })();
