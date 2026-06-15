@@ -45,15 +45,23 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     navToggle.setAttribute('aria-expanded', 'false');
 
     // Wait two rAF cycles for the nav collapse + any repaint to settle,
-    // THEN measure and scroll — guarantees accurate getBoundingClientRect.
+    // THEN scroll. On mobile we use scrollIntoView so that scroll-margin-top
+    // (set to --nav-h on .ci-page) is respected by the browser natively —
+    // this avoids the measurement drift caused by the dynamic URL bar on iOS.
+    // On desktop we keep the manual calculation which works reliably there.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        var navH = parseInt(
-          getComputedStyle(document.documentElement)
-            .getPropertyValue('--nav-h')
-        ) || 60;
-        var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
-        window.scrollTo({ top: top, behavior: 'smooth' });
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          var navH = parseInt(
+            getComputedStyle(document.documentElement)
+              .getPropertyValue('--nav-h')
+          ) || 64;
+          var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
       });
     });
   });

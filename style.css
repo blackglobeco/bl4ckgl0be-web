@@ -388,6 +388,22 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
+  /* Mask goes on the WRAP, not on ci-mockup-bg.
+     Separating mask from background-blend-mode avoids the iOS Safari
+     compositing bug where a mask on the same layer as blend-mode
+     causes the GIF frames to flash white. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 15%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 15%,
+    black 100%
+  );
 }
 
 .ci-mockup-bg {
@@ -404,19 +420,11 @@ body {
   background-size: contain;
   background-position: center center;
   background-blend-mode: screen;
-  /* Left-edge fade so mockup dissolves into the text panel */
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 15%,
-    black 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 15%,
-    black 100%
-  );
+  /* Force GPU compositing layer — prevents iOS from re-compositing
+     against white between GIF frames */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  /* Mask is intentionally NOT on this element — it lives on .ci-mockup-wrap */
 }
 
 /* ══════════════════════════════
@@ -667,11 +675,8 @@ body {
     min-height: 220px;
     max-height: 360px;
     overflow: hidden;
-  }
-
-  /* On mobile: radial mask fades all edges; background-blend-mode
-     still eliminates white flash exactly as on desktop */
-  .ci-mockup-bg {
+    /* On mobile: radial mask fades all edges — kept on the WRAP (not .ci-mockup-bg)
+       to avoid the iOS GPU compositing bug (mask + blend-mode on same element = white flash) */
     -webkit-mask-image: radial-gradient(
       ellipse 95% 90% at 50% 50%,
       black 50%,
@@ -682,6 +687,13 @@ body {
       black 50%,
       transparent 100%
     );
+  }
+
+  /* On mobile: remove any mask from ci-mockup-bg (mask lives on wrapper);
+     background-blend-mode: screen still eliminates white flash */
+  .ci-mockup-bg {
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   .ip-widget  { width: 280px; }
