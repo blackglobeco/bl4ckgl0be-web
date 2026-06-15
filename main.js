@@ -28,9 +28,21 @@ document.addEventListener('click', function (e) {
   }
 });
 
-// ── Smooth scroll for internal anchor nav links ──────
-// On mobile the nav closes first (shifts layout), so we defer the scroll
-// to the next frame AFTER the nav has collapsed and layout has settled.
+// ── Smooth scroll for internal anchor nav links ──────────────────────────────
+// Strategy: close the nav first, wait two rAF cycles for layout to settle,
+// then scroll to exactly (section.offsetTop − navH).
+//
+// WHY offsetTop and NOT getBoundingClientRect():
+//   getBoundingClientRect() returns the position relative to the CURRENT
+//   viewport — if the page has already scrolled, you get a wrong number.
+//   offsetTop is always the absolute distance from the document top,
+//   independent of scroll position. This is the reliable measurement.
+//
+// WHY navH subtraction and NOT scroll-margin-top:
+//   scroll-margin-top on the section would double-subtract on mobile
+//   (CSS subtracts navH, then JS subtracts navH again → lands too high).
+//   With scroll-margin-top: 0 on .ci-page mobile and padding-top: 0,
+//   the section top = content start, and JS places it exactly under nav.
 document.querySelectorAll('a.nav-scroll').forEach(function (link) {
   link.addEventListener('click', function (e) {
     var href = this.getAttribute('href');
@@ -39,29 +51,25 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     if (!target) return;
     e.preventDefault();
 
-    // Close nav first so its height doesn't throw off the scroll target
+    // 1. Close the mobile nav dropdown
     navLinks.classList.remove('open');
     navToggle.classList.remove('active');
     navToggle.setAttribute('aria-expanded', 'false');
 
-    // Wait two rAF cycles for the nav collapse + any repaint to settle,
-    // THEN scroll. On mobile we use scrollIntoView so that scroll-margin-top
-    // (set to --nav-h on .ci-page) is respected by the browser natively —
-    // this avoids the measurement drift caused by the dynamic URL bar on iOS.
-    // On desktop we keep the manual calculation which works reliably there.
+    // 2. Wait two animation frames for the nav to fully collapse and
+    //    for any layout reflow to complete before measuring.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        var isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-          var navH = parseInt(
-            getComputedStyle(document.documentElement)
-              .getPropertyValue('--nav-h')
-          ) || 64;
-          var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
-          window.scrollTo({ top: top, behavior: 'smooth' });
-        }
+        var navH = parseInt(
+          getComputedStyle(document.documentElement)
+            .getPropertyValue('--nav-h')
+        ) || 60;
+
+        // offsetTop = distance from section top to document top (absolute).
+        // Subtract navH so the section top lands flush under the fixed navbar.
+        var targetTop = target.offsetTop - navH;
+
+        window.scrollTo({ top: targetTop, behavior: 'smooth' });
       });
     });
   });

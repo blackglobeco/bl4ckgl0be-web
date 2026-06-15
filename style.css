@@ -24,7 +24,6 @@
 
 html {
   scroll-behavior: smooth;
-  /* scroll-snap: mandatory so both pages fill the viewport */
   scroll-snap-type: y mandatory;
 }
 html, body {
@@ -146,7 +145,6 @@ body {
   padding-top: var(--nav-h);
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  /* scroll-margin-top ensures nav doesn't cover content when snapping */
   scroll-margin-top: 0px;
 }
 
@@ -258,8 +256,6 @@ body {
   border-top: 1px solid rgba(255,255,255,0.06);
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  /* KEY FIX: scroll-margin-top = nav height so the section top lands
-     exactly at the bottom of the navbar when scrolled/snapped to */
   scroll-margin-top: var(--nav-h);
   overflow: hidden;
 }
@@ -363,22 +359,13 @@ body {
 .ci-launch-btn svg { flex-shrink: 0; opacity: 0.55; }
 
 /* ══════════════════════════════════════════════
-   RIGHT MOCKUP — GIF white-flicker fix
-   ──────────────────────────────────────────────
-   Root cause on iOS Safari / Android Chrome:
-   mix-blend-mode on <img> GIFs composites each frame
-   against white at the GPU level before the page blend
-   is applied — causing a full white flash every loop.
-
-   THE FIX: Render the GIF as CSS background-image.
-   background-blend-mode blends layers against the
-   element's own background-color (black) internally —
-   BEFORE the element is composited to the page.
-   Result: dark GIF pixels → transparent, no white flash,
-   works on every browser including iOS Safari.
-
-   The background-image URL is injected by JS so the GIF
-   starts loading only when the element exists in DOM.
+   RIGHT MOCKUP — video
+   No mix-blend-mode. The video's own near-black
+   background is visually identical to --black
+   (#080808). object-fit:cover fills edge-to-edge
+   so no letterbox bars appear.
+   background-color on both wrap and video ensures
+   zero colour mismatch even before video loads.
 ══════════════════════════════════════════════ */
 .ci-mockup-wrap {
   position: absolute;
@@ -388,7 +375,7 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  /* Mask on the WRAP only — never on the video element itself */
+  background-color: var(--black);
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -403,11 +390,6 @@ body {
   );
 }
 
-/* ── Video mockup — replaces GIF background-image trick ──
-   <video autoplay muted loop playsinline> is hardware-decoded
-   by the mobile GPU and has zero flicker/compositing issues.
-   mix-blend-mode: screen works correctly on video elements
-   (unlike animated GIFs) on both iOS Safari and Android Chrome. */
 .ci-mockup-video {
   position: absolute;
   top: 50%;
@@ -415,8 +397,8 @@ body {
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  mix-blend-mode: screen;
+  object-fit: cover;
+  background-color: var(--black);
 }
 
 /* ══════════════════════════════
@@ -629,29 +611,43 @@ body {
   .hero-rule  { margin: 16px 0; }
   .hero-sub   { font-size: 13px; line-height: 1.7; max-width: 100%; }
 
-  /* ── CI page mobile — stacked, free scroll ── */
+  /* ══════════════════════════════════════════════
+     CI PAGE MOBILE — SCROLL & LAYOUT FIX
+     ──────────────────────────────────────────────
+     SCROLL ROOT CAUSE:
+     JS scrolls to: section.offsetTop − navH (60px)
+     This puts the section's top border at y=navH.
+
+     If section has padding-top: navH (60px), content
+     starts at y = navH + 60 = 120px → blank gap.
+
+     If section has scroll-margin-top: navH (60px),
+     browser subtracts another 60px → content at 180px.
+
+     FIX: padding-top:0, scroll-margin-top:0 on section.
+     Content offset handled purely by margin-top on
+     .ci-text = navH + 24px breathing room.
+  ══════════════════════════════════════════════ */
   .ci-page {
     height: auto;
     min-height: 100dvh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    /* padding-top = nav height only; scroll-margin-top handles the nav offset.
-       The extra 36px spacing is moved to ci-text margin-top below so it shows
-       below the nav instead of creating a gap above visible content. */
-    padding-top: var(--nav-h);
+    padding-top: 0;
     padding-bottom: 56px;
     overflow: visible;
-    scroll-margin-top: var(--nav-h);
+    scroll-margin-top: 0;
   }
 
   .ci-text {
     width: 100%;
     min-width: unset;
     padding: 0 var(--gutter);
-    margin-top: 36px;
+    margin-top: calc(var(--nav-h) + 24px);
     margin-bottom: 32px;
   }
+
   .ci-title { font-size: clamp(22px, 7vw, 34px); line-height: 1.2; }
   .ci-rule  { margin: 16px 0; }
   .ci-desc  { font-size: 13px; max-width: 100%; margin-bottom: 20px; }
@@ -662,7 +658,13 @@ body {
   }
   .ci-stat-num { font-size: 24px; }
 
-  /* ── Mobile mockup — below text, full-width ── */
+  /* ── Mobile mockup ──
+     BACKGROUND FIX:
+     background-color: var(--black) on both wrap and
+     video ensures the area behind/around the video
+     is exactly #080808 — same as the page body.
+     No mix-blend-mode (not needed for video, causes
+     colour shift). Mask stays on wrap only. */
   .ci-mockup-wrap {
     position: relative;
     top: auto; left: auto; right: auto;
@@ -671,7 +673,7 @@ body {
     min-height: 220px;
     max-height: 360px;
     overflow: hidden;
-    /* Radial mask fades all edges — stays on WRAP, never on video element */
+    background-color: var(--black);
     -webkit-mask-image: radial-gradient(
       ellipse 95% 90% at 50% 50%,
       black 50%,
@@ -685,9 +687,14 @@ body {
   }
 
   .ci-mockup-video {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background-color: var(--black);
   }
 
   .ip-widget  { width: 280px; }
