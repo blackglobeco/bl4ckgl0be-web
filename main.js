@@ -28,6 +28,20 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ── Smooth scroll for internal anchor nav links ──────
+document.querySelectorAll('a.nav-scroll').forEach(link => {
+  link.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    const target = document.querySelector(href);
+    if (!target) return;
+    e.preventDefault();
+    const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 64;
+    const top  = target.getBoundingClientRect().top + window.pageYOffset - navH;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+});
+
 // ── IP Widget ──────────────────────────────
 (function () {
 
@@ -116,9 +130,6 @@ document.addEventListener('click', (e) => {
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
-  // Geo lookup for a specific IP
-  // PRIMARY: ipapi.co — matches Cloudflare geo data (same source as c99.nl)
-  // FALLBACK: ipwho.is — if ipapi.co fails
   function geoForIP(ip) {
     return fetch('https://ipapi.co/' + ip + '/json/')
       .then(function (r) { return r.json(); })
@@ -130,7 +141,6 @@ document.addEventListener('click', (e) => {
         fillGeo(isp, loc, type);
       })
       .catch(function () {
-        // Fallback to ipwho.is
         return fetch('https://ipwho.is/' + ip)
           .then(function (r) { return r.json(); })
           .then(function (g) {
@@ -148,8 +158,6 @@ document.addEventListener('click', (e) => {
       });
   }
 
-  // ── STEP 1: ipv4.icanhazip.com — Cloudflare-owned, returns plain text IPv4 ──
-  // ── STEP 2: pass that IPv4 to geo lookup ──
   fetch('https://ipv4.icanhazip.com')
     .then(function (r) { return r.text(); })
     .then(function (t) {
@@ -159,7 +167,6 @@ document.addEventListener('click', (e) => {
       return geoForIP(ipv4);
     })
     .catch(function () {
-      // icanhazip failed — try ipwho.is auto-detect as full fallback
       return fetch('https://ipwho.is/')
         .then(function (r) { return r.json(); })
         .then(function (g) {
@@ -175,7 +182,7 @@ document.addEventListener('click', (e) => {
         });
     });
 
-  // ── Connection — navigator.connection (same as c99.nl) ──
+  // ── Connection — navigator.connection ──
   var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (nc) {
     var ct = (nc.effectiveType || '').toUpperCase();
@@ -185,7 +192,7 @@ document.addEventListener('click', (e) => {
     setVal('wConnection', 'N/A');
   }
 
-  // ── Local IP — WebRTC (same as c99.nl) ──
+  // ── Local IP — WebRTC ──
   try {
     var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
     pc.createDataChannel('');
