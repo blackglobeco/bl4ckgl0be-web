@@ -523,209 +523,156 @@ body {
 }
 
 /* ══════════════════════════════
-   GLOBE DOT & IP WIDGET
+   IP DOT & WIDGET — fixed overlays
+   Both live at body level, no parent clipping possible
 ══════════════════════════════ */
 
-.globe-dot-wrap {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 20;
+/* ── Red blinking dot — fixed to globe center via JS ── */
+.ip-dot {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  z-index: 9000;
   cursor: pointer;
-  pointer-events: auto; /* override parent's pointer-events:none */
+  /* JS sets top/left at runtime */
 }
 
-/* Outer ping ring */
-.dot-ping {
+.ip-dot-ping {
   position: absolute;
-  top: 50%; left: 50%;
-  width: 28px; height: 28px;
-  transform: translate(-50%, -50%);
+  inset: -8px;
   border-radius: 50%;
-  background: rgba(204,34,34,0.35);
+  background: rgba(204,34,34,0.4);
   animation: dot-ping 1.8s cubic-bezier(0,0,0.2,1) infinite;
-  pointer-events: none;
 }
-
-/* Core red dot */
-.dot-core {
+.ip-dot-core {
   position: absolute;
-  top: 50%; left: 50%;
-  width: 12px; height: 12px;
-  transform: translate(-50%, -50%);
+  inset: 0;
   border-radius: 50%;
   background: #cc2222;
-  box-shadow: 0 0 0 2px rgba(204,34,34,0.4), 0 0 16px rgba(204,34,34,0.85), 0 0 32px rgba(204,34,34,0.4);
+  box-shadow: 0 0 0 2px rgba(204,34,34,0.35), 0 0 14px rgba(204,34,34,0.9), 0 0 28px rgba(204,34,34,0.4);
   animation: dot-blink 1.8s ease-in-out infinite;
-  pointer-events: none;
 }
 
 @keyframes dot-ping {
-  0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 0.9; }
-  70%  { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
-  100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+  0%   { transform: scale(0.8); opacity: 0.9; }
+  70%  { transform: scale(3);   opacity: 0; }
+  100% { transform: scale(3);   opacity: 0; }
 }
 @keyframes dot-blink {
-  0%,100% { opacity:1;   box-shadow: 0 0 0 2px rgba(204,34,34,0.4), 0 0 18px rgba(204,34,34,0.9), 0 0 36px rgba(204,34,34,0.5); }
-  50%     { opacity:0.5; box-shadow: 0 0 0 2px rgba(204,34,34,0.15), 0 0 6px rgba(204,34,34,0.3); }
+  0%,100% { opacity: 1;   box-shadow: 0 0 0 2px rgba(204,34,34,0.35), 0 0 14px rgba(204,34,34,0.9), 0 0 28px rgba(204,34,34,0.4); }
+  50%     { opacity: 0.4; box-shadow: 0 0 0 2px rgba(204,34,34,0.1), 0 0 5px rgba(204,34,34,0.3); }
 }
 
-/* ── Widget Panel ── */
+/* ── Widget panel — fixed, always on top ── */
 .ip-widget {
-  position: absolute;
-  bottom: calc(100% + 22px);
-  left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  width: 340px;
-  background: rgba(8,8,10,0.98);
-  border: 1px solid rgba(255,255,255,0.07);
+  position: fixed;
+  z-index: 9999;
+  width: 320px;
+  background: rgba(8,8,10,0.97);
+  border: 1px solid rgba(255,255,255,0.08);
   border-top: 2px solid #cc2222;
-  box-shadow:
-    0 0 0 1px rgba(0,0,0,0.6),
-    0 16px 56px rgba(0,0,0,0.97),
-    0 0 80px rgba(204,34,34,0.05);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  z-index: 200;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.95), 0 0 0 1px rgba(0,0,0,0.5);
   font-family: var(--font-mono);
+  /* JS positions it relative to the dot */
 }
 
-.globe-dot-wrap:hover .ip-widget,
-.globe-dot-wrap.panel-open .ip-widget {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* Header bar */
-.ip-widget-header {
+.ipw-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 14px;
-  background: rgba(204,34,34,0.10);
-  border-bottom: 1px solid rgba(204,34,34,0.22);
+  padding: 9px 13px;
+  background: rgba(204,34,34,0.09);
+  border-bottom: 1px solid rgba(204,34,34,0.2);
 }
-.ip-widget-icon { color: #cc2222; flex-shrink: 0; }
-.ip-widget-title {
-  font-size: 8.5px;
+.ipw-title {
+  font-size: 8px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #cc2222;
-  font-weight: 500;
 }
-.ip-widget-link {
+.ipw-link {
   margin-left: auto;
   font-size: 7.5px;
-  letter-spacing: 0.12em;
-  color: var(--silver);
+  letter-spacing: 0.1em;
+  color: #666;
   text-decoration: none;
   text-transform: uppercase;
-  transition: color 0.15s;
   white-space: nowrap;
+  transition: color 0.15s;
 }
-.ip-widget-link:hover { color: var(--white); }
+.ipw-link:hover { color: #f0ede8; }
 
-/* Public IP hero block */
-.ip-widget-ip {
-  padding: 11px 14px 10px;
+.ipw-ip-block {
+  padding: 11px 13px 9px;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.ip-widget-ip-label {
+.ipw-ip-label {
   font-size: 7px;
-  letter-spacing: 0.2em;
-  color: var(--silver);
+  letter-spacing: 0.18em;
+  color: #5a5a5a;
   text-transform: uppercase;
   margin-bottom: 3px;
 }
-.ip-widget-ip-addr {
-  font-size: 19px;
+.ipw-ip-val {
+  font-size: 18px;
   font-weight: 500;
+  color: #f0ede8;
   letter-spacing: 0.04em;
-  color: var(--white);
   line-height: 1;
   word-break: break-all;
 }
-.ip-widget-ip-addr.shimmer { color: var(--silver); font-size: 11px; }
 
-/* Rows */
-.ip-widget-rows { padding: 3px 0 6px; }
-
-.ipr {
+.ipw-rows { padding: 3px 0 4px; }
+.ipw-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 10px;
-  padding: 4px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.032);
+  gap: 8px;
+  padding: 4px 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
-.ipr:last-child { border-bottom: none; }
-
-.ipr-k {
+.ipw-row:last-child { border-bottom: none; }
+.ipw-k {
   font-size: 7.5px;
-  letter-spacing: 0.15em;
-  color: var(--silver);
+  letter-spacing: 0.14em;
+  color: #5a5a5a;
   text-transform: uppercase;
   flex-shrink: 0;
-  line-height: 1.6;
 }
-.ipr-v {
+.ipw-v {
   font-size: 9px;
-  letter-spacing: 0.04em;
-  color: var(--white);
+  color: #f0ede8;
   text-align: right;
   word-break: break-word;
-  line-height: 1.6;
+  letter-spacing: 0.03em;
 }
-.ipr-v.shimmer {
-  color: var(--silver);
-  animation: shim 1.2s ease-in-out infinite;
-}
-/* Connection type badges */
-.ipr-v.type-residential { color: #44cc88; }
-.ipr-v.type-proxy       { color: #ff4444; }
-.ipr-v.type-hosting     { color: #ffaa22; }
-.ipr-v.type-mobile      { color: #66aaff; }
+.ipw-v.residential { color: #44cc88; }
+.ipw-v.proxy       { color: #ff4444; }
+.ipw-v.hosting     { color: #ffaa22; }
+.ipw-v.mobile      { color: #66aaff; }
 
-@keyframes shim {
-  0%,100% { opacity: 0.35; }
-  50%     { opacity: 1; }
-}
-
-/* Divider label (Local IP section) */
-.ipr-divider {
-  font-size: 7px;
-  letter-spacing: 0.18em;
-  color: rgba(255,255,255,0.2);
-  text-transform: uppercase;
-  padding: 6px 14px 2px;
+.ipw-footer {
+  padding: 8px 13px;
   border-top: 1px solid rgba(255,255,255,0.05);
-  margin-top: 2px;
+  text-align: right;
 }
+.ipw-close {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #666;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ipw-close:hover { color: #f0ede8; border-color: rgba(255,255,255,0.3); }
 
-/* ── Mobile: use fixed position so nothing clips it ── */
 @media (max-width: 768px) {
-  .globe-dot-wrap { top: 40%; left: 50%; }
-  .ip-widget {
-    width: 290px;
-    /* fixed: breaks out of all overflow:hidden parents on mobile */
-    position: fixed;
-    bottom: auto;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  .globe-dot-wrap:hover .ip-widget,
-  .globe-dot-wrap.panel-open .ip-widget {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  .ip-widget-ip-addr { font-size: 16px; }
+  .ip-widget { width: 280px; }
+  .ipw-ip-val { font-size: 15px; }
 }
-
 @media (max-width: 390px) {
-  .ip-widget { width: 258px; }
+  .ip-widget { width: 252px; }
 }

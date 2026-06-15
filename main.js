@@ -214,106 +214,146 @@ document.addEventListener('click', (e) => {
 
 
 
-// ── IP Identity Widget (c99.nl methods) ───
-(function () {
-  const dot = document.getElementById('globeDot');
-  if (!dot) return;
 
-  // Shim helpers
-  function shimmer(id) {
-    const el = document.getElementById(id);
-    if (el) { el.textContent = '—'; el.classList.add('shimmer'); }
+// ── IP Widget — fixed overlay ──────────────
+(function () {
+
+  var dot    = document.getElementById('ipDot');
+  var widget = document.getElementById('ipWidget');
+  var closeBtn = document.getElementById('ipWidgetClose');
+  if (!dot || !widget) return;
+
+  // ── Position the dot over the globe centre ──
+  function placeDot() {
+    var globeImg = document.querySelector('.globe-img');
+    if (!globeImg) return;
+    var r = globeImg.getBoundingClientRect();
+    var cx = r.left + r.width  * 0.5;
+    var cy = r.top  + r.height * 0.5;
+    dot.style.left = (cx - 6) + 'px';
+    dot.style.top  = (cy - 6) + 'px';
   }
+
+  placeDot();
+  window.addEventListener('resize', placeDot);
+  // Re-place after gif loads
+  var gi = document.querySelector('.globe-img');
+  if (gi) gi.addEventListener('load', placeDot);
+
+  // ── Position widget near the dot ──
+  function placeWidget() {
+    var dr = dot.getBoundingClientRect();
+    var cx = dr.left + 6; // dot center x
+    var cy = dr.top  + 6; // dot center y
+    var ww = widget.offsetWidth  || 320;
+    var wh = widget.offsetHeight || 300;
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+
+    // Try above-centre first
+    var top  = cy - wh - 20;
+    var left = cx - ww / 2;
+
+    // Clamp to viewport
+    if (top < 10) top = cy + 24;            // flip below if off top
+    if (left < 10) left = 10;
+    if (left + ww > vw - 10) left = vw - ww - 10;
+    if (top + wh > vh - 10) top = vh - wh - 10;
+
+    widget.style.top  = top  + 'px';
+    widget.style.left = left + 'px';
+  }
+
+  // ── Toggle widget ──
+  var isOpen = false;
+  function openWidget() {
+    widget.style.display = 'block';
+    placeWidget();
+    isOpen = true;
+  }
+  function closeWidget() {
+    widget.style.display = 'none';
+    isOpen = false;
+  }
+
+  dot.addEventListener('click', function (e) {
+    e.stopPropagation();
+    isOpen ? closeWidget() : openWidget();
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeWidget();
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (isOpen && !widget.contains(e.target) && e.target !== dot) {
+      closeWidget();
+    }
+  });
+
+  // ── Fetch IP data ──
   function setVal(id, text, cls) {
-    const el = document.getElementById(id);
+    var el = document.getElementById(id);
     if (!el) return;
     el.textContent = text || 'N/A';
-    el.classList.remove('shimmer','type-residential','type-proxy','type-hosting','type-mobile');
-    if (cls) el.classList.add(cls);
-  }
-  function setIP(text) {
-    const el = document.getElementById('wIpAddr');
-    if (!el) return;
-    el.textContent = text || '—';
-    el.classList.remove('shimmer');
+    el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
 
-  const ids = ['wIpAddr','wIpType','wHostname','wIsp','wLocation','wLocalIp','wReferrer','wConnection'];
-  ids.forEach(id => { if (id !== 'wIpAddr') shimmer(id); });
-
-  // ── 1. Public IP + ISP + Location via ip-api.com (no key, CORS OK) ──
+  // ip-api.com — free, no key, CORS enabled
   fetch('https://ip-api.com/json/?fields=status,query,isp,org,city,regionName,country,mobile,proxy,hosting,reverse')
-    .then(r => r.json())
-    .then(d => {
-      if (d.status !== 'success') throw new Error('bad status');
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d.status !== 'success') throw new Error('fail');
 
-      setIP(d.query);
+      document.getElementById('wIpAddr').textContent = d.query || '—';
 
-      // IP Type — exact labels matching c99.nl
-      let typeLabel = 'Residential', typeCls = 'type-residential';
-      if (d.hosting) { typeLabel = 'Hosting / Data Center'; typeCls = 'type-hosting'; }
-      else if (d.proxy) { typeLabel = 'Proxy / VPN';         typeCls = 'type-proxy'; }
-      else if (d.mobile){ typeLabel = 'Mobile';              typeCls = 'type-mobile'; }
-      setVal('wIpType', typeLabel, typeCls);
-
-      // Hostname (reverse DNS)
+      var typeLabel = 'Residential', typeCls = 'residential';
+      if (d.hosting)     { typeLabel = 'Hosting / DC';  typeCls = 'hosting'; }
+      else if (d.proxy)  { typeLabel = 'Proxy / VPN';   typeCls = 'proxy'; }
+      else if (d.mobile) { typeLabel = 'Mobile';        typeCls = 'mobile'; }
+      setVal('wIpType',   typeLabel, typeCls);
       setVal('wHostname', d.reverse || 'N/A');
-
-      // ISP
-      setVal('wIsp', d.isp || d.org || 'N/A');
-
-      // Location — "City, Region, Country" like c99.nl
-      const loc = [d.city, d.regionName, d.country].filter(Boolean).join(', ');
+      setVal('wIsp',      d.isp || d.org || 'N/A');
+      var loc = [d.city, d.regionName, d.country].filter(Boolean).join(', ');
       setVal('wLocation', loc || 'N/A');
     })
-    .catch(() => {
-      setIP('Unavailable');
-      ['wIpType','wHostname','wIsp','wLocation'].forEach(id => setVal(id, 'Unavailable'));
+    .catch(function(){
+      document.getElementById('wIpAddr').textContent = 'Unavailable';
     });
 
-  // ── 2. Referrer — from browser, same as c99.nl ──
+  // Referrer
   setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
 
-  // ── 3. Local IP via WebRTC — exact same method as c99.nl ──
-  (function getWebRTCIPs() {
-    try {
-      const pc = new (window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
-      pc.createDataChannel('');
-      pc.createOffer(sdp => pc.setLocalDescription(sdp, () => {}, () => {}), () => {});
-      pc.onicecandidate = ice => {
-        if (ice && ice.candidate && ice.candidate.candidate) {
-          const ips = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g) || [];
-          const unique = [...new Set(ips)];
-          if (unique.length) setVal('wLocalIp', unique.join(', '));
-          pc.onicecandidate = null;
-        }
-      };
-      setTimeout(() => {
-        const el = document.getElementById('wLocalIp');
-        if (el && el.classList.contains('shimmer')) setVal('wLocalIp', 'Not detected');
-      }, 2000);
-    } catch(e) {
-      setVal('wLocalIp', 'API not supported');
-    }
-  })();
+  // Connection type (navigator.connection — same as c99.nl)
+  var nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (nc) {
+    var ct = (nc.effectiveType || '').toUpperCase();
+    var dl = nc.downlink != null ? ', \u2193' + nc.downlink + ' Mbps' : '';
+    setVal('wConnection', ct + dl);
+  } else {
+    setVal('wConnection', 'API not supported');
+  }
 
-  // ── 4. Connection type — exact same as c99.nl ──
-  (function getConnection() {
-    const nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (nc) {
-      const type  = nc.effectiveType ? nc.effectiveType.toUpperCase() : '';
-      const speed = nc.downlink != null ? `, ↓${nc.downlink} Mbps` : '';
-      setVal('wConnection', type + speed);
-    } else {
-      setVal('wConnection', 'API not supported');
-    }
-  })();
-
-  // ── Toggle on tap (mobile) ──
-  dot.addEventListener('click', e => {
-    e.stopPropagation();
-    dot.classList.toggle('panel-open');
-  });
-  document.addEventListener('click', () => dot.classList.remove('panel-open'));
+  // Local IP via WebRTC (same method as c99.nl)
+  try {
+    var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
+    pc.createDataChannel('');
+    pc.createOffer(function(sdp){ pc.setLocalDescription(sdp, function(){}, function(){}); }, function(){});
+    pc.onicecandidate = function(ice) {
+      if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+      var m = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3})/g) || [];
+      var uniq = m.filter(function(v,i,a){ return a.indexOf(v)===i; });
+      if (uniq.length) { setVal('wLocalIp', uniq.join(', ')); pc.onicecandidate = null; }
+    };
+    setTimeout(function(){
+      var el = document.getElementById('wLocalIp');
+      if (el && el.textContent === '—') setVal('wLocalIp', 'Not detected');
+    }, 3000);
+  } catch(e) {
+    setVal('wLocalIp', 'Not supported');
+  }
 
 })();
