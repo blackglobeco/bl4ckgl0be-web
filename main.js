@@ -110,7 +110,6 @@ document.addEventListener('click', (e) => {
     el.textContent = text || 'N/A';
     el.className = 'ipw-v' + (cls ? ' ' + cls : '');
   }
-
   function populate(ip, isp, location, ipType) {
     document.getElementById('wIpAddr').textContent = ip;
     var cls = 'residential';
@@ -124,21 +123,58 @@ document.addEventListener('click', (e) => {
     setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
   }
 
-  // ── Data sources ──
-  // PRIMARY: /api/ip — our own Vercel Edge Function
-  // Reads Cf-Connecting-Ip header server-side — EXACT same source as c99.nl
-  // Always returns the real IPv4, ISP via ASN, city/region/country from Cloudflare
+  // ── PRIMARY: own /api/ip edge function (reads Cloudflare headers) ──
+  // Then use the resolved IP to query ipwho.is for ISP + full geo detail.
+  // If the IP is still IPv6 (pure IPv6 network), we show it but also
+  // pass it to ipwho.is which handles IPv6 geo lookup fine.
   function tryOwnApi() {
     return fetch('/api/ip')
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d.ip || d.ip === 'unknown') throw new Error('own api fail');
-        var loc = [d.city, d.region, d.country].filter(Boolean).join(', ');
-        populate(d.ip, d.asn ? 'ASN ' + d.asn : 'N/A', loc || 'N/A', 'Residential');
+        if (!d.ip || d.ip === 'unknown') throw new Error('own api no ip');
+
+        var displayIP = d.ip;
+        // Show IPv4 label if we extracted it from IPv6
+        if (d.isIPv6 && d.raw !== d.ip) {
+          displayIP = d.ip + ' (extracted from IPv6)';
+        }
+
+        document.getElementById('wIpAddr').textContent = displayIP;
+
+        // Use the CF geo data we already have for city/region/country
+        var cfLoc = [d.city, d.region, d.country].filter(Boolean).join(', ');
+
+        // Now fetch ISP from ipwho.is using the resolved IP
+        return fetch('https://ipwho.is/' + d.ip)
+          .then(function (r) { return r.json(); })
+          .then(function (geo) {
+            var isp = (geo.connection && geo.connection.isp)
+                    ? geo.connection.isp
+                    : (geo.org || d.asn || 'N/A');
+
+            // Prefer ipwho.is location (more detailed) over CF headers
+            var loc = [geo.city, geo.region, geo.country].filter(Boolean).join(', ')
+                   || cfLoc
+                   || 'N/A';
+
+            var ipType = 'Residential';
+            if (geo.connection) {
+              var org = (geo.connection.org || '').toLowerCase();
+              if (/vpn|proxy/i.test(org))                            ipType = 'Proxy / VPN';
+              else if (/hosting|cloud|data.?cent|server/i.test(org)) ipType = 'Hosting / DC';
+            }
+            if (d.isIPv6 && d.raw === d.ip) ipType = 'IPv6 Residential';
+
+            populate(d.ip, isp, loc, ipType);
+          })
+          .catch(function () {
+            // ipwho.is failed — use CF geo data alone
+            populate(d.ip, d.asn ? 'ASN ' + d.asn : 'N/A', cfLoc || 'N/A', 'Residential');
+          });
       });
   }
 
-  // FALLBACK 1: ipwho.is
+  // ── FALLBACK 1: ipwho.is (auto-detects caller IP) ──
   function tryIpwho() {
     return fetch('https://ipwho.is/')
       .then(function (r) { return r.json(); })
@@ -156,7 +192,7 @@ document.addEventListener('click', (e) => {
       });
   }
 
-  // FALLBACK 2: ipapi.co
+  // ── FALLBACK 2: ipapi.co ──
   function tryIpapi() {
     return fetch('https://ipapi.co/json/')
       .then(function (r) { return r.json(); })
@@ -167,7 +203,7 @@ document.addEventListener('click', (e) => {
       });
   }
 
-  // FALLBACK 3: freeipapi.com
+  // ── FALLBACK 3: freeipapi.com ──
   function tryFreeipapi() {
     return fetch('https://freeipapi.com/api/json')
       .then(function (r) { return r.json(); })
