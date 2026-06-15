@@ -520,3 +520,209 @@ body {
   .glitch-text::before,
   .glitch-text::after { animation: none; }
 }
+
+/* ══════════════════════════════
+   GLOBE DOT & IP WIDGET
+══════════════════════════════ */
+
+.globe-dot-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  cursor: pointer;
+}
+
+/* Outer ping ring */
+.dot-ping {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 28px; height: 28px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(204,34,34,0.35);
+  animation: dot-ping 1.8s cubic-bezier(0,0,0.2,1) infinite;
+  pointer-events: none;
+}
+
+/* Core red dot */
+.dot-core {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 12px; height: 12px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #cc2222;
+  box-shadow: 0 0 0 2px rgba(204,34,34,0.4), 0 0 16px rgba(204,34,34,0.85), 0 0 32px rgba(204,34,34,0.4);
+  animation: dot-blink 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes dot-ping {
+  0%   { transform: translate(-50%,-50%) scale(0.8); opacity: 0.9; }
+  70%  { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+  100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+}
+@keyframes dot-blink {
+  0%,100% { opacity:1;   box-shadow: 0 0 0 2px rgba(204,34,34,0.4), 0 0 18px rgba(204,34,34,0.9), 0 0 36px rgba(204,34,34,0.5); }
+  50%     { opacity:0.5; box-shadow: 0 0 0 2px rgba(204,34,34,0.15), 0 0 6px rgba(204,34,34,0.3); }
+}
+
+/* ── Widget Panel ── */
+.ip-widget {
+  position: absolute;
+  bottom: calc(100% + 22px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  width: 340px;
+  background: rgba(8,8,10,0.98);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-top: 2px solid #cc2222;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6),
+    0 16px 56px rgba(0,0,0,0.97),
+    0 0 80px rgba(204,34,34,0.05);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 50;
+  font-family: var(--font-mono);
+  overflow: hidden;
+}
+
+.globe-dot-wrap:hover .ip-widget,
+.globe-dot-wrap.panel-open .ip-widget {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Header bar */
+.ip-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: rgba(204,34,34,0.10);
+  border-bottom: 1px solid rgba(204,34,34,0.22);
+}
+.ip-widget-icon { color: #cc2222; flex-shrink: 0; }
+.ip-widget-title {
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #cc2222;
+  font-weight: 500;
+}
+.ip-widget-link {
+  margin-left: auto;
+  font-size: 7.5px;
+  letter-spacing: 0.12em;
+  color: var(--silver);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.ip-widget-link:hover { color: var(--white); }
+
+/* Public IP hero block */
+.ip-widget-ip {
+  padding: 11px 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ip-widget-ip-label {
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  color: var(--silver);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.ip-widget-ip-addr {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  line-height: 1;
+  word-break: break-all;
+}
+.ip-widget-ip-addr.shimmer { color: var(--silver); font-size: 11px; }
+
+/* Rows */
+.ip-widget-rows { padding: 3px 0 6px; }
+
+.ipr {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.032);
+}
+.ipr:last-child { border-bottom: none; }
+
+.ipr-k {
+  font-size: 7.5px;
+  letter-spacing: 0.15em;
+  color: var(--silver);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+.ipr-v {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  text-align: right;
+  word-break: break-word;
+  line-height: 1.6;
+}
+.ipr-v.shimmer {
+  color: var(--silver);
+  animation: shim 1.2s ease-in-out infinite;
+}
+/* Connection type badges */
+.ipr-v.type-residential { color: #44cc88; }
+.ipr-v.type-proxy       { color: #ff4444; }
+.ipr-v.type-hosting     { color: #ffaa22; }
+.ipr-v.type-mobile      { color: #66aaff; }
+
+@keyframes shim {
+  0%,100% { opacity: 0.35; }
+  50%     { opacity: 1; }
+}
+
+/* Divider label (Local IP section) */
+.ipr-divider {
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.2);
+  text-transform: uppercase;
+  padding: 6px 14px 2px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 2px;
+}
+
+/* ── Mobile: open below dot ── */
+@media (max-width: 768px) {
+  .globe-dot-wrap { top: 40%; left: 50%; }
+  .ip-widget {
+    width: 290px;
+    bottom: auto;
+    top: calc(100% + 16px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  .globe-dot-wrap:hover .ip-widget,
+  .globe-dot-wrap.panel-open .ip-widget {
+    transform: translateX(-50%) translateY(0);
+  }
+  .ip-widget-ip-addr { font-size: 16px; }
+}
+
+@media (max-width: 390px) {
+  .ip-widget { width: 258px; }
+}

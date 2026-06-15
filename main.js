@@ -211,3 +211,109 @@ document.addEventListener('click', (e) => {
 
   requestAnimationFrame(animate);
 })();
+
+
+
+// ── IP Identity Widget (c99.nl methods) ───
+(function () {
+  const dot = document.getElementById('globeDot');
+  if (!dot) return;
+
+  // Shim helpers
+  function shimmer(id) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '—'; el.classList.add('shimmer'); }
+  }
+  function setVal(id, text, cls) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text || 'N/A';
+    el.classList.remove('shimmer','type-residential','type-proxy','type-hosting','type-mobile');
+    if (cls) el.classList.add(cls);
+  }
+  function setIP(text) {
+    const el = document.getElementById('wIpAddr');
+    if (!el) return;
+    el.textContent = text || '—';
+    el.classList.remove('shimmer');
+  }
+
+  const ids = ['wIpAddr','wIpType','wHostname','wIsp','wLocation','wLocalIp','wReferrer','wConnection'];
+  ids.forEach(id => { if (id !== 'wIpAddr') shimmer(id); });
+
+  // ── 1. Public IP + ISP + Location via ip-api.com (no key, CORS OK) ──
+  fetch('https://ip-api.com/json/?fields=status,query,isp,org,city,regionName,country,mobile,proxy,hosting,reverse')
+    .then(r => r.json())
+    .then(d => {
+      if (d.status !== 'success') throw new Error('bad status');
+
+      setIP(d.query);
+
+      // IP Type — exact labels matching c99.nl
+      let typeLabel = 'Residential', typeCls = 'type-residential';
+      if (d.hosting) { typeLabel = 'Hosting / Data Center'; typeCls = 'type-hosting'; }
+      else if (d.proxy) { typeLabel = 'Proxy / VPN';         typeCls = 'type-proxy'; }
+      else if (d.mobile){ typeLabel = 'Mobile';              typeCls = 'type-mobile'; }
+      setVal('wIpType', typeLabel, typeCls);
+
+      // Hostname (reverse DNS)
+      setVal('wHostname', d.reverse || 'N/A');
+
+      // ISP
+      setVal('wIsp', d.isp || d.org || 'N/A');
+
+      // Location — "City, Region, Country" like c99.nl
+      const loc = [d.city, d.regionName, d.country].filter(Boolean).join(', ');
+      setVal('wLocation', loc || 'N/A');
+    })
+    .catch(() => {
+      setIP('Unavailable');
+      ['wIpType','wHostname','wIsp','wLocation'].forEach(id => setVal(id, 'Unavailable'));
+    });
+
+  // ── 2. Referrer — from browser, same as c99.nl ──
+  setVal('wReferrer', document.referrer || 'Direct Access / Not Provided');
+
+  // ── 3. Local IP via WebRTC — exact same method as c99.nl ──
+  (function getWebRTCIPs() {
+    try {
+      const pc = new (window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
+      pc.createDataChannel('');
+      pc.createOffer(sdp => pc.setLocalDescription(sdp, () => {}, () => {}), () => {});
+      pc.onicecandidate = ice => {
+        if (ice && ice.candidate && ice.candidate.candidate) {
+          const ips = ice.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g) || [];
+          const unique = [...new Set(ips)];
+          if (unique.length) setVal('wLocalIp', unique.join(', '));
+          pc.onicecandidate = null;
+        }
+      };
+      setTimeout(() => {
+        const el = document.getElementById('wLocalIp');
+        if (el && el.classList.contains('shimmer')) setVal('wLocalIp', 'Not detected');
+      }, 2000);
+    } catch(e) {
+      setVal('wLocalIp', 'API not supported');
+    }
+  })();
+
+  // ── 4. Connection type — exact same as c99.nl ──
+  (function getConnection() {
+    const nc = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (nc) {
+      const type  = nc.effectiveType ? nc.effectiveType.toUpperCase() : '';
+      const speed = nc.downlink != null ? `, ↓${nc.downlink} Mbps` : '';
+      setVal('wConnection', type + speed);
+    } else {
+      setVal('wConnection', 'API not supported');
+    }
+  })();
+
+  // ── Toggle on tap (mobile) ──
+  dot.addEventListener('click', e => {
+    e.stopPropagation();
+    dot.classList.toggle('panel-open');
+  });
+  document.addEventListener('click', () => dot.classList.remove('panel-open'));
+
+})();

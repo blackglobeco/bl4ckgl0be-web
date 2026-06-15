@@ -2,19 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Proper mobile viewport: no zoom lock, uses device width -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Black Globe — Cyber intelligence for global security and stability." />
-  <!-- iOS home screen / status bar -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <!-- Android theme colour -->
   <meta name="theme-color" content="#080808" />
   <title>BLACK GLOBE — Cyber Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
 
@@ -50,6 +47,62 @@
     <div class="hero-globe-wrap">
       <div class="globe-glow"></div>
       <img src="blackglobe.gif" alt="Black Globe rotating" class="globe-img" />
+
+      <!-- BLINKING RED DOT + IDENTITY WIDGET -->
+      <div class="globe-dot-wrap" id="globeDot">
+        <div class="dot-ping"></div>
+        <div class="dot-core"></div>
+
+        <div class="ip-widget">
+
+          <!-- Header — matches c99.nl "Your Identity & Network" -->
+          <div class="ip-widget-header">
+            <svg class="ip-widget-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span class="ip-widget-title">Your Identity &amp; Network</span>
+            <a class="ip-widget-link" href="https://ip.c99.nl/" target="_blank" rel="noopener">Full Report ↗</a>
+          </div>
+
+          <!-- Public IP Address hero -->
+          <div class="ip-widget-ip">
+            <div class="ip-widget-ip-label">Public IP Address</div>
+            <div class="ip-widget-ip-addr shimmer" id="wIpAddr">Resolving…</div>
+          </div>
+
+          <!-- Rows — same fields and order as c99.nl -->
+          <div class="ip-widget-rows">
+            <div class="ipr">
+              <span class="ipr-k">Local IP (WebRTC)</span>
+              <span class="ipr-v shimmer" id="wLocalIp">—</span>
+            </div>
+            <div class="ipr">
+              <span class="ipr-k">IP Type</span>
+              <span class="ipr-v shimmer" id="wIpType">—</span>
+            </div>
+            <div class="ipr">
+              <span class="ipr-k">Hostname</span>
+              <span class="ipr-v shimmer" id="wHostname">—</span>
+            </div>
+            <div class="ipr">
+              <span class="ipr-k">ISP</span>
+              <span class="ipr-v shimmer" id="wIsp">—</span>
+            </div>
+            <div class="ipr">
+              <span class="ipr-k">Location</span>
+              <span class="ipr-v shimmer" id="wLocation">—</span>
+            </div>
+            <div class="ipr">
+              <span class="ipr-k">Referrer</span>
+              <span class="ipr-v shimmer" id="wReferrer">—</span>
+            </div>
+            <div class="ipr">
+              <span class="ipr-k">Connection</span>
+              <span class="ipr-v shimmer" id="wConnection">—</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
     </div>
     <div class="hero-content">
       <p class="hero-eyebrow">CYBER INTELLIGENCE GROUP</p>
@@ -65,6 +118,6 @@
     </div>
   </section>
 
-  <script src="main.js?v=4"></script>
+  <script src="main.js?v=6"></script>
 </body>
 </html>
