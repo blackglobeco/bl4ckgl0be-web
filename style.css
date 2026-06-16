@@ -258,12 +258,12 @@ body {
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
-  border-top: 1px solid rgba(255,255,255,0.06);
+  /* border-top removed — was rendering as a faint line between sections */
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  /* KEY FIX: scroll-margin-top = nav height so the section top lands
-     exactly at the bottom of the navbar when scrolled/snapped to */
-  scroll-margin-top: var(--nav-h);
+  /* scroll-margin-top NOT set here — padding-top already offsets for the
+     fixed navbar. Setting both caused a double-gap on desktop. Mobile
+     scroll-margin-top is handled in the @media (max-width: 768px) block. */
   overflow: hidden;
 }
 
