@@ -388,6 +388,10 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
+  /* Match the CI page background so mix-blend-mode: screen on the video
+     blends the video's dark areas into exactly #080808, the same as the
+     section background — eliminating any visible seam or colour mismatch. */
+  background-color: #080808;
   /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
