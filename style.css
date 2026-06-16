@@ -24,15 +24,18 @@
 
 html {
   scroll-behavior: smooth;
-  /* scroll-snap: mandatory so both pages fill the viewport */
+  /* scroll-snap on root element — overflow-y: scroll is required for
+     mandatory snap to work correctly across all browsers. */
   scroll-snap-type: y mandatory;
-}
-html, body {
-  width: 100%;
+  overflow-y: scroll;
   height: 100%;
 }
 
 body {
+  /* min-height prevents extra scrollable space between snap sections
+     which showed as dark strips above/below the snapped pages. */
+  min-height: 100%;
+  width: 100%;
   background: var(--black);
   color: var(--white);
   font-family: var(--font-body);
