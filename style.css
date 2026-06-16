@@ -420,8 +420,10 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  mix-blend-mode: screen;
-  background: var(--black);
+  /* No mix-blend-mode — it created a compositing layer that bypassed
+     all z-index stacking, making it impossible to cover the strip zones.
+     The video's own dark background renders cleanly without blending. */
+  background: #080808;
 }
 
 /* ══════════════════════════════
