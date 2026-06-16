@@ -383,28 +383,22 @@ body {
 .ci-mockup-wrap {
   position: absolute;
   top: 0;
-  /* Start wrap at 20% so the video content extends left into the gap zone.
-     The mask below fades it out over the text column, eliminating the
-     grey empty strip that appeared when the wrap started at 38%. */
-  left: 20%;
+  left: 38%;
   right: 0;
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  background-color: #080808;
-  /* Mask: transparent 0–45% of wrap width covers the text column overlap,
-     then snaps to fully opaque — video fills the gap, mask hides the
-     overlap, no grey seam between panels. */
+  /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 45%,
+    black 15%,
     black 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 45%,
+    black 15%,
     black 100%
   );
 }
