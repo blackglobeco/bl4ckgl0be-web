@@ -22,19 +22,19 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html, body {
+  background: #080808;
+}
+
 html {
   scroll-behavior: smooth;
-  /* No scroll-snap on desktop — JS handles smooth navigation.
-     Snap is only applied on mobile via the media query below. */
   height: 100%;
 }
 
 body {
-  /* min-height prevents extra scrollable space between snap sections
-     which showed as dark strips above/below the snapped pages. */
   min-height: 100%;
   width: 100%;
-  background: var(--black);
+  background: #080808;
   color: var(--white);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -49,9 +49,7 @@ body {
   top: 0; left: 0; right: 0;
   z-index: 100;
   height: var(--nav-h);
-  background: rgba(8,8,8,0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: #080808;
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .nav-inner {
@@ -249,13 +247,23 @@ body {
   width: 100%;
   height: 100dvh;
   min-height: 560px;
-  background: var(--black);
+  background: #080808;
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
-  /* border-top removed — was rendering as a faint line between sections */
-  /* scroll-snap properties are mobile-only — see media query below */
   overflow: hidden;
+  /* Ensure no scroll gap above this section on any browser */
+  scroll-margin-top: 0;
+}
+
+/* Force the nav-height padding zone to be pure black — no bleed-through */
+.ci-page::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: #080808;
+  z-index: 1;
 }
 
 /* ── LEFT text panel ── */
