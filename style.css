@@ -251,7 +251,7 @@ body {
   width: 100%;
   height: 100dvh;
   min-height: 560px;
-  background: var(--black);
+  background: #000000;
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
@@ -388,9 +388,9 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  /* Black background so the video never bleeds a white/grey bg through
+  /* Pure black so the video never bleeds a white/grey bg through
      mix-blend-mode on any browser — the blend composites against this */
-  background: var(--black);
+  background: #000000;
   /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
@@ -411,7 +411,7 @@ body {
    by the mobile GPU and has zero flicker/compositing issues.
    mix-blend-mode: screen works correctly on video elements
    (unlike animated GIFs) on both iOS Safari and Android Chrome.
-   background: black ensures no grey/white background bleeds through
+   background: #000000 ensures no grey/white background bleeds through
    on any browser before the first frame has decoded. */
 .ci-mockup-video {
   position: absolute;
@@ -422,7 +422,7 @@ body {
   height: 100%;
   object-fit: contain;
   mix-blend-mode: screen;
-  background: var(--black);
+  background: #000000;
 }
 
 /* ══════════════════════════════
@@ -677,7 +677,7 @@ body {
     min-height: 220px;
     max-height: 360px;
     overflow: hidden;
-    background: var(--black);
+    background: #000000;
     /* Radial mask fades all edges — stays on WRAP, never on video element */
     -webkit-mask-image: radial-gradient(
       ellipse 95% 90% at 50% 50%,
