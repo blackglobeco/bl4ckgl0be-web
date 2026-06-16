@@ -22,19 +22,18 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body {
-  background: #080808;
-}
-
 html {
   scroll-behavior: smooth;
+  /* scroll-snap: mandatory so both pages fill the viewport */
+  scroll-snap-type: y mandatory;
+}
+html, body {
+  width: 100%;
   height: 100%;
 }
 
 body {
-  min-height: 100%;
-  width: 100%;
-  background: #080808;
+  background: var(--black);
   color: var(--white);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -49,7 +48,9 @@ body {
   top: 0; left: 0; right: 0;
   z-index: 100;
   height: var(--nav-h);
-  background: #080808;
+  background: rgba(8,8,8,0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .nav-inner {
@@ -143,7 +144,10 @@ body {
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
-  /* scroll-snap properties moved to mobile-only media query */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  /* scroll-margin-top ensures nav doesn't cover content when snapping */
+  scroll-margin-top: 0px;
 }
 
 .hero-globe-wrap {
@@ -153,12 +157,12 @@ body {
   right: 0;
   height: 100%;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .globe-glow {
   position: absolute;
-  inset: 0;
+  inset: -10%;
   background: radial-gradient(
     circle at 50% 50%,
     rgba(110, 4, 4, 0.20) 0%,
@@ -246,33 +250,18 @@ body {
   position: relative;
   width: 100%;
   height: 100dvh;
-  background: #080808;
+  min-height: 560px;
+  background: var(--black);
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  /* KEY FIX: scroll-margin-top = nav height so the section top lands
+     exactly at the bottom of the navbar when scrolled/snapped to */
+  scroll-margin-top: var(--nav-h);
   overflow: hidden;
-}
-
-/* Black bars on ci-page pseudo-elements cover the top and bottom strip
-   zones where the video bleeds through. These are NOT inside ci-mockup-wrap
-   so they are unaffected by its mask-image. z-index:3 sits above the video. */
-.ci-page::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 38%; right: 0;
-  height: var(--nav-h);
-  background: #080808;
-  z-index: 3;
-  pointer-events: none;
-}
-.ci-page::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 38%; right: 0;
-  height: var(--nav-h);
-  background: #080808;
-  z-index: 3;
-  pointer-events: none;
 }
 
 /* ── LEFT text panel ── */
@@ -399,10 +388,22 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  background: #080808;
-  /* Left-edge fade only */
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
-  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
+  /* Black background so the video never bleeds a white/grey bg through
+     mix-blend-mode on any browser — the blend composites against this */
+  background: var(--black);
+  /* Mask on the WRAP only — never on the video element itself */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 15%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 15%,
+    black 100%
+  );
 }
 
 /* ── Video mockup — replaces GIF background-image trick ──
@@ -420,10 +421,8 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* No mix-blend-mode — it created a compositing layer that bypassed
-     all z-index stacking, making it impossible to cover the strip zones.
-     The video's own dark background renders cleanly without blending. */
-  background: #080808;
+  mix-blend-mode: screen;
+  background: var(--black);
 }
 
 /* ══════════════════════════════
