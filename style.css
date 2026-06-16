@@ -388,6 +388,9 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
+  /* Black background so the video never bleeds a white/grey bg through
+     mix-blend-mode on any browser — the blend composites against this */
+  background: var(--black);
   /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
@@ -407,7 +410,9 @@ body {
    <video autoplay muted loop playsinline> is hardware-decoded
    by the mobile GPU and has zero flicker/compositing issues.
    mix-blend-mode: screen works correctly on video elements
-   (unlike animated GIFs) on both iOS Safari and Android Chrome. */
+   (unlike animated GIFs) on both iOS Safari and Android Chrome.
+   background: black ensures no grey/white background bleeds through
+   on any browser before the first frame has decoded. */
 .ci-mockup-video {
   position: absolute;
   top: 50%;
@@ -417,6 +422,7 @@ body {
   height: 100%;
   object-fit: contain;
   mix-blend-mode: screen;
+  background: var(--black);
 }
 
 /* ══════════════════════════════
@@ -671,6 +677,7 @@ body {
     min-height: 220px;
     max-height: 360px;
     overflow: hidden;
+    background: var(--black);
     /* Radial mask fades all edges — stays on WRAP, never on video element */
     -webkit-mask-image: radial-gradient(
       ellipse 95% 90% at 50% 50%,

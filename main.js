@@ -44,24 +44,29 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     navToggle.classList.remove('active');
     navToggle.setAttribute('aria-expanded', 'false');
 
-    // Wait two rAF cycles for the nav collapse + any repaint to settle,
-    // THEN scroll. On mobile we use scrollIntoView so that scroll-margin-top
-    // (set to --nav-h on .ci-page) is respected by the browser natively —
-    // this avoids the measurement drift caused by the dynamic URL bar on iOS.
-    // On desktop we keep the manual calculation which works reliably there.
+    // Wait THREE rAF cycles so the nav collapse, any CSS transitions, and the
+    // mobile browser's dynamic URL bar resize all settle before we measure.
+    // On mobile we manually compute the target position with a generous navH
+    // buffer — scrollIntoView alone can mis-fire when the URL bar is mid-
+    // transition, leaving the section title hidden behind the fixed navbar.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        var isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
+        requestAnimationFrame(function () {
+          var isMobile = window.innerWidth <= 768;
           var navH = parseInt(
             getComputedStyle(document.documentElement)
               .getPropertyValue('--nav-h')
-          ) || 64;
-          var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
-          window.scrollTo({ top: top, behavior: 'smooth' });
-        }
+          ) || 60;
+          if (isMobile) {
+            // Add 8px breathing room below the navbar so content is never
+            // clipped by the URL bar or nav edge on iOS/Android Chrome.
+            var top = target.getBoundingClientRect().top + window.pageYOffset - navH - 8;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+          } else {
+            var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+          }
+        });
       });
     });
   });
