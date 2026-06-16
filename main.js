@@ -44,31 +44,24 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     navToggle.classList.remove('active');
     navToggle.setAttribute('aria-expanded', 'false');
 
-    // Wait THREE rAF cycles so the nav collapse, any CSS transitions, and the
-    // mobile browser's dynamic URL bar resize all settle before we measure.
-    // On mobile we manually compute the target position with a generous navH
-    // buffer — scrollIntoView alone can mis-fire when the URL bar is mid-
-    // transition, leaving the section title hidden behind the fixed navbar.
+    // Wait two rAF cycles for the nav collapse + any repaint to settle,
+    // THEN scroll. On mobile we use scrollIntoView so that scroll-margin-top
+    // (set to --nav-h on .ci-page) is respected by the browser natively —
+    // this avoids the measurement drift caused by the dynamic URL bar on iOS.
+    // On desktop we keep the manual calculation which works reliably there.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () {
-          var isMobile = window.innerWidth <= 768;
+        var isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
           var navH = parseInt(
             getComputedStyle(document.documentElement)
               .getPropertyValue('--nav-h')
-          ) || 60;
-          if (isMobile) {
-            // Mobile: subtract navH + 8px breathing room
-            var top = target.getBoundingClientRect().top + window.pageYOffset - navH - 8;
-            window.scrollTo({ top: top, behavior: 'smooth' });
-          } else {
-            // Desktop: scroll to the exact top of the section (no navH offset).
-            // The section's padding-top:navH already reserves space below the
-            // fixed navbar, so subtracting navH would show the previous section.
-            var top = target.getBoundingClientRect().top + window.pageYOffset;
-            window.scrollTo({ top: top, behavior: 'smooth' });
-          }
-        });
+          ) || 64;
+          var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
+          window.scrollTo({ top: top, behavior: 'smooth' });
+        }
       });
     });
   });
