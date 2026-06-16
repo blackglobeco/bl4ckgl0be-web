@@ -388,20 +388,21 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  /* Mask on the WRAP only — never on the video element itself.
-     Fade must be very short (3%) so the transparent→black transition
-     doesn't cause mix-blend-mode: screen to pull the background below
-     #080808 across a wide zone, creating a visible tone gradient. */
+  /* Match the CI page background so mix-blend-mode: screen on the video
+     blends the video's dark areas into exactly #080808, the same as the
+     section background — eliminating any visible seam or colour mismatch. */
+  background-color: #080808;
+  /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 3%,
+    black 15%,
     black 100%
   );
   mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 3%,
+    black 15%,
     black 100%
   );
 }
