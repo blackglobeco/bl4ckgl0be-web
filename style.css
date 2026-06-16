@@ -153,12 +153,12 @@ body {
   right: 0;
   height: 100%;
   pointer-events: none;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .globe-glow {
   position: absolute;
-  inset: -10%;
+  inset: 0;
   background: radial-gradient(
     circle at 50% 50%,
     rgba(110, 4, 4, 0.20) 0%,
@@ -246,12 +246,9 @@ body {
   position: relative;
   width: 100%;
   height: 100dvh;
-  min-height: 560px;
   background: #080808;
   display: flex;
   align-items: center;
-  /* Match hero exactly: padding-top offsets for fixed navbar,
-     align-items:center vertically centres content in remaining space */
   padding-top: var(--nav-h);
   overflow: hidden;
 }
@@ -374,28 +371,43 @@ body {
 ══════════════════════════════════════════════ */
 .ci-mockup-wrap {
   position: absolute;
-  top: 0;
+  top: var(--nav-h);
   left: 38%;
   right: 0;
-  height: 100%;
+  height: calc(100% - var(--nav-h));
   pointer-events: none;
   overflow: hidden;
-  /* Black background so the video never bleeds a white/grey bg through
-     mix-blend-mode on any browser — the blend composites against this */
-  background: var(--black);
-  /* Mask on the WRAP only — never on the video element itself */
+  background: #080808;
+  /* Combined mask: fade left edge AND fade top/bottom edges so the
+     video never bleeds into the gap strips above or below content */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
     black 15%,
     black 100%
+  ),
+  linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
   );
+  -webkit-mask-composite: destination-in;
   mask-image: linear-gradient(
     to right,
     transparent 0%,
     black 15%,
     black 100%
+  ),
+  linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
   );
+  mask-composite: intersect;
 }
 
 /* ── Video mockup — replaces GIF background-image trick ──
