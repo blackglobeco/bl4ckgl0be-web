@@ -249,7 +249,8 @@ body {
   background: #080808;
   display: flex;
   align-items: center;
-  padding-top: var(--nav-h);
+  /* No padding-top — content centred in full 100dvh.
+     ci-text uses align-self to sit in the lower portion below navbar. */
   overflow: hidden;
 }
 
@@ -261,6 +262,8 @@ body {
   min-width: 280px;
   padding: 0 var(--gutter);
   flex-shrink: 0;
+  /* Push content down so it clears the fixed navbar */
+  margin-top: var(--nav-h);
 }
 
 @media (min-width: 1280px) {
