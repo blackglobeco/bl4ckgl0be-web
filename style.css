@@ -250,9 +250,9 @@ body {
   background: #080808;
   display: flex;
   align-items: center;
-  /* No padding-top on the section — the fixed navbar floats above.
-     Content is centred in the full 100dvh, navbar overlaps the top
-     portion which is intentional (same as the hero section). */
+  /* Match hero exactly: padding-top offsets for fixed navbar,
+     align-items:center vertically centres content in remaining space */
+  padding-top: var(--nav-h);
   overflow: hidden;
 }
 
@@ -262,8 +262,7 @@ body {
   z-index: 2;
   width: 45%;
   min-width: 280px;
-  /* Top padding pushes content below the fixed navbar */
-  padding: var(--nav-h) var(--gutter) 0;
+  padding: 0 var(--gutter);
   flex-shrink: 0;
 }
 

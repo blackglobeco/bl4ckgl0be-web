@@ -58,12 +58,14 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
               .getPropertyValue('--nav-h')
           ) || 60;
           if (isMobile) {
-            // Add 8px breathing room below the navbar so content is never
-            // clipped by the URL bar or nav edge on iOS/Android Chrome.
+            // Mobile: subtract navH + 8px breathing room
             var top = target.getBoundingClientRect().top + window.pageYOffset - navH - 8;
             window.scrollTo({ top: top, behavior: 'smooth' });
           } else {
-            var top = target.getBoundingClientRect().top + window.pageYOffset - navH;
+            // Desktop: scroll to the exact top of the section (no navH offset).
+            // The section's padding-top:navH already reserves space below the
+            // fixed navbar, so subtracting navH would show the previous section.
+            var top = target.getBoundingClientRect().top + window.pageYOffset;
             window.scrollTo({ top: top, behavior: 'smooth' });
           }
         });
