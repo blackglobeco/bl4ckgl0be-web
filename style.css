@@ -253,6 +253,28 @@ body {
   overflow: hidden;
 }
 
+/* Black bars on ci-page pseudo-elements cover the top and bottom strip
+   zones where the video bleeds through. These are NOT inside ci-mockup-wrap
+   so they are unaffected by its mask-image. z-index:3 sits above the video. */
+.ci-page::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 38%; right: 0;
+  height: var(--nav-h);
+  background: #080808;
+  z-index: 3;
+  pointer-events: none;
+}
+.ci-page::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 38%; right: 0;
+  height: var(--nav-h);
+  background: #080808;
+  z-index: 3;
+  pointer-events: none;
+}
+
 /* ── LEFT text panel ── */
 .ci-text {
   position: relative;
@@ -381,31 +403,6 @@ body {
   /* Left-edge fade only */
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 15%, black 100%);
-}
-
-/* Solid black cover over the navbar-height zone of the mockup,
-   so video pixels don't show through in the top strip */
-.ci-mockup-wrap::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--nav-h);
-  background: #080808;
-  z-index: 10;
-}
-
-/* Solid black cover for bottom strip — any overflow below content */
-.ci-mockup-wrap::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--nav-h);
-  background: #080808;
-  z-index: 10;
 }
 
 /* ── Video mockup — replaces GIF background-image trick ──
