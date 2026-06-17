@@ -462,11 +462,12 @@ body {
   cursor: pointer;
   transition: opacity 0.3s;
 }
-
-/* When mobile nav is open, sink the dot below the nav overlay */
+/* Hide red dot when mobile nav is open so it doesn't bleed through the menu */
 body.nav-open .ip-dot {
-  z-index: 90;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
+
 .ip-dot-ping {
   position: absolute;
   inset: -8px;
