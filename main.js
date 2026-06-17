@@ -6,27 +6,42 @@
 var navToggle = document.getElementById('navToggle');
 var navLinks  = document.getElementById('navLinks');
 
+function setDotVisibility(visible) {
+  var dot = document.getElementById('ipDot');
+  if (!dot) return;
+  dot.style.opacity       = visible ? '' : '0';
+  dot.style.pointerEvents = visible ? '' : 'none';
+}
+
+function openNav() {
+  navLinks.classList.add('open');
+  navToggle.classList.add('active');
+  navToggle.setAttribute('aria-expanded', 'true');
+  document.body.classList.add('nav-open');
+  setDotVisibility(false);
+}
+
+function closeNav() {
+  navLinks.classList.remove('open');
+  navToggle.classList.remove('active');
+  navToggle.setAttribute('aria-expanded', 'false');
+  document.body.classList.remove('nav-open');
+  setDotVisibility(true);
+}
+
 navToggle.addEventListener('click', function () {
-  var isOpen = navLinks.classList.toggle('open');
-  navToggle.classList.toggle('active', isOpen);
-  navToggle.setAttribute('aria-expanded', String(isOpen));
+  navLinks.classList.contains('open') ? closeNav() : openNav();
 });
 navLinks.querySelectorAll('a').forEach(function (a) {
   // Don't close the nav when tapping the Contact trigger on mobile
   if (a.id === 'contactTrigger') return;
-  a.addEventListener('click', function () {
-    navLinks.classList.remove('open');
-    navToggle.classList.remove('active');
-    navToggle.setAttribute('aria-expanded', 'false');
-  });
+  a.addEventListener('click', closeNav);
 });
 document.addEventListener('click', function (e) {
   if (navLinks.classList.contains('open') &&
       !navLinks.contains(e.target) &&
       !navToggle.contains(e.target)) {
-    navLinks.classList.remove('open');
-    navToggle.classList.remove('active');
-    navToggle.setAttribute('aria-expanded', 'false');
+    closeNav();
   }
 });
 
