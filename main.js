@@ -12,6 +12,8 @@ navToggle.addEventListener('click', function () {
   navToggle.setAttribute('aria-expanded', String(isOpen));
 });
 navLinks.querySelectorAll('a').forEach(function (a) {
+  // Don't close the nav when tapping the Contact trigger on mobile
+  if (a.id === 'contactTrigger') return;
   a.addEventListener('click', function () {
     navLinks.classList.remove('open');
     navToggle.classList.remove('active');
@@ -28,9 +30,41 @@ document.addEventListener('click', function (e) {
   }
 });
 
+// ── Contact dropdown ──────────────────────
+(function () {
+  var trigger  = document.getElementById('contactTrigger');
+  var dropdown = document.getElementById('contactDropdown');
+  if (!trigger || !dropdown) return;
+
+  function openDropdown() {
+    dropdown.classList.add('is-open');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+  function closeDropdown() {
+    dropdown.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  trigger.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropdown.classList.contains('is-open') ? closeDropdown() : openDropdown();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function (e) {
+    if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDropdown();
+  });
+})();
+
 // ── Smooth scroll for internal anchor nav links ──────
-// On mobile the nav closes first (shifts layout), so we defer the scroll
-// to the next frame AFTER the nav has collapsed and layout has settled.
 document.querySelectorAll('a.nav-scroll').forEach(function (link) {
   link.addEventListener('click', function (e) {
     var href = this.getAttribute('href');
@@ -39,16 +73,10 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     if (!target) return;
     e.preventDefault();
 
-    // Close nav first so its height doesn't throw off the scroll target
     navLinks.classList.remove('open');
     navToggle.classList.remove('active');
     navToggle.setAttribute('aria-expanded', 'false');
 
-    // Wait two rAF cycles for the nav collapse + any repaint to settle,
-    // THEN scroll. On mobile we use scrollIntoView so that scroll-margin-top
-    // (set to --nav-h on .ci-page) is respected by the browser natively —
-    // this avoids the measurement drift caused by the dynamic URL bar on iOS.
-    // On desktop we keep the manual calculation which works reliably there.
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
         var isMobile = window.innerWidth <= 768;

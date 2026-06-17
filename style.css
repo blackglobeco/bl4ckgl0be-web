@@ -24,7 +24,6 @@
 
 html {
   scroll-behavior: smooth;
-  /* scroll-snap: mandatory so both pages fill the viewport */
   scroll-snap-type: y mandatory;
 }
 html, body {
@@ -132,6 +131,63 @@ body {
 .nav-toggle.active span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
 /* ══════════════════════════════
+   CONTACT DROPDOWN
+══════════════════════════════ */
+.nav-contact-item {
+  position: relative;
+}
+
+.contact-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 180px;
+  background: #0d0d0d;
+  border: 1px solid rgba(204,34,34,0.3);
+  border-top: 2px solid var(--accent);
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+  z-index: 200;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(204,34,34,0.06);
+}
+
+.contact-dropdown.is-open {
+  display: block;
+}
+
+.contact-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #999;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+}
+
+.contact-dropdown-item:hover {
+  color: var(--white);
+  background: rgba(204,34,34,0.1);
+}
+
+.cd-icon {
+  color: var(--accent);
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.contact-dropdown li + li {
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ══════════════════════════════
    PAGE 1 — HERO
 ══════════════════════════════ */
 .hero {
@@ -146,7 +202,6 @@ body {
   padding-top: var(--nav-h);
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  /* scroll-margin-top ensures nav doesn't cover content when snapping */
   scroll-margin-top: 0px;
 }
 
@@ -258,8 +313,6 @@ body {
   border-top: 1px solid rgba(255,255,255,0.06);
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  /* KEY FIX: scroll-margin-top = nav height so the section top lands
-     exactly at the bottom of the navbar when scrolled/snapped to */
   scroll-margin-top: var(--nav-h);
   overflow: hidden;
 }
@@ -362,24 +415,9 @@ body {
 .ci-launch-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 .ci-launch-btn svg { flex-shrink: 0; opacity: 0.55; }
 
-/* ══════════════════════════════════════════════
-   RIGHT MOCKUP — GIF white-flicker fix
-   ──────────────────────────────────────────────
-   Root cause on iOS Safari / Android Chrome:
-   mix-blend-mode on <img> GIFs composites each frame
-   against white at the GPU level before the page blend
-   is applied — causing a full white flash every loop.
-
-   THE FIX: Render the GIF as CSS background-image.
-   background-blend-mode blends layers against the
-   element's own background-color (black) internally —
-   BEFORE the element is composited to the page.
-   Result: dark GIF pixels → transparent, no white flash,
-   works on every browser including iOS Safari.
-
-   The background-image URL is injected by JS so the GIF
-   starts loading only when the element exists in DOM.
-══════════════════════════════════════════════ */
+/* ══════════════════════════════
+   MOCKUP VIDEO
+══════════════════════════════ */
 .ci-mockup-wrap {
   position: absolute;
   top: 0;
@@ -388,7 +426,6 @@ body {
   height: 100%;
   pointer-events: none;
   overflow: hidden;
-  /* Mask on the WRAP only — never on the video element itself */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -403,11 +440,6 @@ body {
   );
 }
 
-/* ── Video mockup — replaces GIF background-image trick ──
-   <video autoplay muted loop playsinline> is hardware-decoded
-   by the mobile GPU and has zero flicker/compositing issues.
-   mix-blend-mode: screen works correctly on video elements
-   (unlike animated GIFs) on both iOS Safari and Android Chrome. */
 .ci-mockup-video {
   position: absolute;
   top: 50%;
@@ -592,7 +624,39 @@ body {
   }
   .nav-toggle { display: flex; }
 
-  /* Turn off snap on mobile — natural scroll */
+  /* ── Mobile contact dropdown — inline under Contact ── */
+  .contact-dropdown {
+    display: none;
+    position: static;
+    border: none;
+    border-left: 2px solid rgba(204,34,34,0.4);
+    border-top: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    margin: 0 0 4px 12px;
+  }
+  .contact-dropdown.is-open {
+    display: block;
+  }
+  .contact-dropdown li {
+    border-bottom: none !important;
+  }
+  .contact-dropdown li + li {
+    border-top: none;
+  }
+  .contact-dropdown-item {
+    padding: 8px 10px;
+    font-size: 10px;
+    color: #777;
+  }
+  .contact-dropdown-item:hover {
+    background: transparent;
+    color: #ccc;
+  }
+
+  /* Turn off snap on mobile */
   html { scroll-snap-type: none; }
 
   /* ── Hero mobile ── */
@@ -629,16 +693,13 @@ body {
   .hero-rule  { margin: 16px 0; }
   .hero-sub   { font-size: 13px; line-height: 1.7; max-width: 100%; }
 
-  /* ── CI page mobile — stacked, free scroll ── */
+  /* ── CI page mobile ── */
   .ci-page {
     height: auto;
     min-height: 100dvh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    /* padding-top = nav height only; scroll-margin-top handles the nav offset.
-       The extra 36px spacing is moved to ci-text margin-top below so it shows
-       below the nav instead of creating a gap above visible content. */
     padding-top: var(--nav-h);
     padding-bottom: 56px;
     overflow: visible;
@@ -662,7 +723,7 @@ body {
   }
   .ci-stat-num { font-size: 24px; }
 
-  /* ── Mobile mockup — below text, full-width ── */
+  /* ── Mobile mockup ── */
   .ci-mockup-wrap {
     position: relative;
     top: auto; left: auto; right: auto;
@@ -671,7 +732,6 @@ body {
     min-height: 220px;
     max-height: 360px;
     overflow: hidden;
-    /* Radial mask fades all edges — stays on WRAP, never on video element */
     -webkit-mask-image: radial-gradient(
       ellipse 95% 90% at 50% 50%,
       black 50%,

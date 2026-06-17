@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=33" />
+  <link rel="stylesheet" href="style.css?v=34" />
 </head>
 <body>
 
@@ -27,7 +27,20 @@
       </button>
       <ul class="nav-links" id="navLinks">
         <li><a href="#cyber-intelligence" class="nav-scroll">Cyber Intelligence</a></li>
-        <li><a href="#" class="nav-cta">Contact</a></li>
+        <li class="nav-contact-item">
+          <a href="#" class="nav-cta nav-contact-trigger" id="contactTrigger" aria-haspopup="true" aria-expanded="false">Contact</a>
+          <ul class="contact-dropdown" id="contactDropdown" role="menu">
+            <li role="none"><a href="https://t.me/+UM8VfYx30xllYzY9" target="_blank" rel="noopener" role="menuitem" class="contact-dropdown-item">
+              <span class="cd-icon">➣</span> TELEGRAM
+            </a></li>
+            <li role="none"><a href="https://t.me/evablackglobeonbot" target="_blank" rel="noopener" role="menuitem" class="contact-dropdown-item">
+              <span class="cd-icon">➣</span> CONTACT US
+            </a></li>
+            <li role="none"><a href="https://www.instagram.com/blackglobe.io" target="_blank" rel="noopener" role="menuitem" class="contact-dropdown-item">
+              <span class="cd-icon">🅾</span> INSTAGRAM
+            </a></li>
+          </ul>
+        </li>
       </ul>
     </div>
   </nav>
@@ -90,13 +103,7 @@
       </a>
     </div>
 
-    <!-- RIGHT — mockup
-         Video replaces the GIF to eliminate the white/black flicker bug on
-         iOS Safari and Android Chrome. <video> with autoplay+muted+loop+playsinline
-         is hardware-decoded and compositor-friendly — no blend-mode compositing
-         artifacts possible. WebM is served first (Android/Chrome), MP4 fallback
-         for iOS Safari.
-    -->
+    <!-- RIGHT — mockup -->
     <div class="ci-mockup-wrap">
       <video class="ci-mockup-video" autoplay muted loop playsinline preload="auto">
         <source src="cyberint_superhd.webm" type="video/webm" />
@@ -133,6 +140,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=35"></script>
+  <script src="main.js?v=36"></script>
 </body>
 </html>
