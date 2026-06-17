@@ -360,11 +360,17 @@ body {
   display: flex;
   align-items: center;
   padding-top: var(--nav-h);
+  padding-bottom: 0;
   border-top: 1px solid rgba(255,255,255,0.06);
   scroll-snap-align: start;
   scroll-snap-stop: always;
   scroll-margin-top: var(--nav-h);
   overflow: hidden;
+}
+
+/* Shift content up by half nav-h to visually centre in the space below the nav */
+.ci-page > .ci-text {
+  margin-top: calc(var(--nav-h) * -0.5);
 }
 
 /* ── LEFT text panel ── */
