@@ -141,7 +141,7 @@ body {
   display: none;
   position: fixed;
   top: var(--nav-h);
-  right: 0;
+  right: var(--gutter);
   min-width: 200px;
   background: rgba(8,8,8,0.95);
   backdrop-filter: blur(8px);
