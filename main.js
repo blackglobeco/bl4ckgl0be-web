@@ -45,89 +45,96 @@ document.addEventListener('click', function (e) {
   }
 });
 
+// ── Nav dropdowns (Platforms + Contact) ──────────────────────
+// Shared references so each can close the other on open
+var platformsTrigger  = document.getElementById('platformsTrigger');
+var platformsDropdown = document.getElementById('platformsDropdown');
+var contactTrigger    = document.getElementById('contactTrigger');
+var contactDropdown   = document.getElementById('contactDropdown');
+
+function closePlatforms() {
+  if (!platformsDropdown) return;
+  platformsDropdown.classList.remove('is-open');
+  if (platformsTrigger) platformsTrigger.setAttribute('aria-expanded', 'false');
+}
+function closeContact() {
+  if (!contactDropdown) return;
+  contactDropdown.classList.remove('is-open');
+  if (contactTrigger) contactTrigger.setAttribute('aria-expanded', 'false');
+}
+
 // ── Platforms dropdown ──────────────────────
 (function () {
-  var trigger  = document.getElementById('platformsTrigger');
-  var dropdown = document.getElementById('platformsDropdown');
-  if (!trigger || !dropdown) return;
+  if (!platformsTrigger || !platformsDropdown) return;
 
-  // Position dropdown under the trigger (desktop)
+  // Right-align dropdown under the trigger word on desktop
   function positionDropdown() {
     if (window.innerWidth > 768) {
-      var rect = trigger.getBoundingClientRect();
-      dropdown.style.left = rect.left + 'px';
+      var rect = platformsTrigger.getBoundingClientRect();
+      var w    = platformsDropdown.offsetWidth || 240;
+      platformsDropdown.style.left = Math.max(0, rect.right - w) + 'px';
     } else {
-      dropdown.style.left = '';
+      platformsDropdown.style.left = '';
     }
   }
 
   function openDropdown() {
+    closeContact();            // close Contact if open
     positionDropdown();
-    dropdown.classList.add('is-open');
-    trigger.setAttribute('aria-expanded', 'true');
-  }
-  function closeDropdown() {
-    dropdown.classList.remove('is-open');
-    trigger.setAttribute('aria-expanded', 'false');
+    platformsDropdown.classList.add('is-open');
+    platformsTrigger.setAttribute('aria-expanded', 'true');
   }
 
-  trigger.addEventListener('click', function (e) {
+  platformsTrigger.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();
-    dropdown.classList.contains('is-open') ? closeDropdown() : openDropdown();
+    platformsDropdown.classList.contains('is-open') ? closePlatforms() : openDropdown();
   });
 
   // Close on outside click
   document.addEventListener('click', function (e) {
-    if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-      closeDropdown();
+    if (!platformsTrigger.contains(e.target) && !platformsDropdown.contains(e.target)) {
+      closePlatforms();
     }
   });
 
   // Close on Escape
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeDropdown();
+    if (e.key === 'Escape') closePlatforms();
   });
 
-  // Close platforms dropdown when a sub-item is clicked
-  dropdown.querySelectorAll('a').forEach(function (a) {
-    a.addEventListener('click', function () {
-      closeDropdown();
-    });
+  // Close when a sub-item is clicked
+  platformsDropdown.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', closePlatforms);
   });
 })();
 
 // ── Contact dropdown ──────────────────────
 (function () {
-  var trigger  = document.getElementById('contactTrigger');
-  var dropdown = document.getElementById('contactDropdown');
-  if (!trigger || !dropdown) return;
+  if (!contactTrigger || !contactDropdown) return;
 
   function openDropdown() {
-    dropdown.classList.add('is-open');
-    trigger.setAttribute('aria-expanded', 'true');
-  }
-  function closeDropdown() {
-    dropdown.classList.remove('is-open');
-    trigger.setAttribute('aria-expanded', 'false');
+    closePlatforms();          // close Platforms if open
+    contactDropdown.classList.add('is-open');
+    contactTrigger.setAttribute('aria-expanded', 'true');
   }
 
-  trigger.addEventListener('click', function (e) {
+  contactTrigger.addEventListener('click', function (e) {
     e.preventDefault();
     e.stopPropagation();
-    dropdown.classList.contains('is-open') ? closeDropdown() : openDropdown();
+    contactDropdown.classList.contains('is-open') ? closeContact() : openDropdown();
   });
 
   // Close on outside click
   document.addEventListener('click', function (e) {
-    if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
-      closeDropdown();
+    if (!contactTrigger.contains(e.target) && !contactDropdown.contains(e.target)) {
+      closeContact();
     }
   });
 
   // Close on Escape
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeDropdown();
+    if (e.key === 'Escape') closeContact();
   });
 })();
 
