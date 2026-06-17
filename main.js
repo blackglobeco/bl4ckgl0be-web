@@ -33,8 +33,8 @@ navToggle.addEventListener('click', function () {
   navLinks.classList.contains('open') ? closeNav() : openNav();
 });
 navLinks.querySelectorAll('a').forEach(function (a) {
-  // Don't close the nav when tapping the Contact trigger on mobile
-  if (a.id === 'contactTrigger') return;
+  // Don't close the nav when tapping the Contact or Platforms trigger on mobile
+  if (a.id === 'contactTrigger' || a.id === 'platformsTrigger') return;
   a.addEventListener('click', closeNav);
 });
 document.addEventListener('click', function (e) {
@@ -44,6 +44,58 @@ document.addEventListener('click', function (e) {
     closeNav();
   }
 });
+
+// ── Platforms dropdown ──────────────────────
+(function () {
+  var trigger  = document.getElementById('platformsTrigger');
+  var dropdown = document.getElementById('platformsDropdown');
+  if (!trigger || !dropdown) return;
+
+  // Position dropdown under the trigger (desktop)
+  function positionDropdown() {
+    if (window.innerWidth > 768) {
+      var rect = trigger.getBoundingClientRect();
+      dropdown.style.left = rect.left + 'px';
+    } else {
+      dropdown.style.left = '';
+    }
+  }
+
+  function openDropdown() {
+    positionDropdown();
+    dropdown.classList.add('is-open');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+  function closeDropdown() {
+    dropdown.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  trigger.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dropdown.classList.contains('is-open') ? closeDropdown() : openDropdown();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function (e) {
+    if (!trigger.contains(e.target) && !dropdown.contains(e.target)) {
+      closeDropdown();
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDropdown();
+  });
+
+  // Close platforms dropdown when a sub-item is clicked
+  dropdown.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () {
+      closeDropdown();
+    });
+  });
+})();
 
 // ── Contact dropdown ──────────────────────
 (function () {

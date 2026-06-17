@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=38" />
+  <link rel="stylesheet" href="style.css?v=39" />
 </head>
 <body>
 
@@ -26,7 +26,14 @@
         <span></span><span></span><span></span>
       </button>
       <ul class="nav-links" id="navLinks">
-        <li><a href="#cyber-intelligence" class="nav-scroll">Cyber Intelligence</a></li>
+        <li class="nav-platforms-item">
+          <a href="#" class="nav-platforms-trigger" id="platformsTrigger" aria-haspopup="true" aria-expanded="false">Platforms</a>
+          <ul class="platforms-dropdown" id="platformsDropdown" role="menu">
+            <li role="none"><a href="#cyber-intelligence" class="contact-dropdown-item nav-scroll platforms-scroll" role="menuitem">
+              <span class="cd-icon">➤</span> CYBER INTELLIGENCE PLATFORM
+            </a></li>
+          </ul>
+        </li>
         <li class="nav-contact-item">
           <a href="#" class="nav-cta nav-contact-trigger" id="contactTrigger" aria-haspopup="true" aria-expanded="false">Contact</a>
           <ul class="contact-dropdown" id="contactDropdown" role="menu">
@@ -140,6 +147,6 @@
     </div>
   </div>
 
-  <script src="main.js?v=38"></script>
+  <script src="main.js?v=39"></script>
 </body>
 </html>
