@@ -140,13 +140,14 @@ document.querySelectorAll('a.nav-scroll').forEach(function (link) {
     var offScreen = (cy < -12 || cy > window.innerHeight + 12 ||
                      cx < -12 || cx > window.innerWidth  + 12);
 
+    var navIsOpen = document.body.classList.contains('nav-open');
     if (offScreen) {
       dot.style.opacity = '0';
       dot.style.pointerEvents = 'none';
       if (isOpen) closeWidget();
     } else {
-      dot.style.opacity = '1';
-      dot.style.pointerEvents = '';
+      dot.style.opacity = navIsOpen ? '0' : '1';
+      dot.style.pointerEvents = navIsOpen ? 'none' : '';
       dot.style.left = cx + 'px';
       dot.style.top  = cy + 'px';
       if (isOpen) repositionWidget();
